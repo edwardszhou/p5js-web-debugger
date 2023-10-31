@@ -1,3 +1,5 @@
+let newVarValue;
+
 window.onload = () => {
     let submitBtn = document.getElementById('submit-btn');
 
@@ -10,6 +12,13 @@ window.onload = () => {
             const response = await chrome.tabs.sendMessage(tab.id, {varName: inputText});
             console.log(response);
           })();
+        
+        let newVarParagraph = document.createElement('p');
+        newVarParagraph.innerText = inputText + ": "
+        newVarValue = document.createElement('span');
+
+        document.body.appendChild(newVarParagraph);
+        newVarParagraph.appendChild(newVarValue);
     })
 }
 
@@ -28,3 +37,12 @@ function highlightVars() {
         }
     }
 }
+
+chrome.runtime.onMessage.addListener(
+    function(request, sender, sendResponse) {
+      if (request.message && newVarValue){
+        newVarValue.innerText = request.message;
+      }
+        
+    }
+  );
