@@ -20,13 +20,15 @@ chrome.runtime.onMessage.addListener( function(req, sender, sendResponse) {
     console.log('received')
     if(req.varName) {
         highlightVars(req.varName);
-        insertDrawEnd("console.log(\'DEBUGTRACK: " + req.varName + ": \' + " + req.varName + ")");
+        insertSetupEnd("frameRate(1)");
+        insertDrawEnd("console.log(\'DEBUGTRACK: Loop #\' + frameCount + \': " + req.varName + " = \' + " + req.varName + ")");
+        clickPlay();
 
         var consoleObserver = new MutationObserver(observeConsole);
         consoleObserver.observe(document.getElementsByClassName('preview-console__messages')[0].firstChild, {childList: true});
         sendResponse({highlighted:true});
-    } else {
-        sendResponse({highlighted:false});
+    } else if (req.type == 'runSketch'){
+        sendResponse({string:parseEditorCode()});
     }
 
 });
@@ -80,9 +82,12 @@ function findEndOfDraw(str) {
     codeArr = str.split('\n');
 
     const drawLine = "function draw() {"
+    const setupLine = "function setup() {"
     let maxLineNumber = 0;
     let drawLoopEnd;
-    let bracketCount = -1;
+    let setupEnd;
+    let drawBracketCount = -1;
+    let setupBracketCount = -1;
 
 
     for(let line of codeArr) {
@@ -90,28 +95,41 @@ function findEndOfDraw(str) {
             maxLineNumber = parseInt(line);
             // console.log("LINE NUMBER: " + maxLineNumber);
         } else if (line.replace(/\s/g, "") === drawLine.replaceAll(/\s/g,"")) {
-            bracketCount = 0;
+            drawBracketCount = 0;
             // console.log("THIS IS FUNCTION DRAW RIGHT HERE: " + line);
         }
-        else {
+        else if(line.replace(/\s/g, "") === setupLine.replaceAll(/\s/g,"")){
+            setupBracketCount = 0;
             // console.log(bracketCount + " brackets");
             // console.log("This is a line: " + line);
         }
 
-        if(bracketCount != -1) {
+        if(drawBracketCount != -1) {
             for(let char of line) {
-                if(char === "{") bracketCount++;
+                if(char === "{") drawBracketCount++;
                 else if(char === "}") {
-                    if(--bracketCount == 0) {
+                    if(--drawBracketCount == 0) {
                         // console.log("----END OF DRAW LOOP RIGHT HERE: Line " + maxLineNumber);
-                        bracketCount = -1;
+                        drawBracketCount = -1;
                         drawLoopEnd = maxLineNumber;
                     }
                 }
             }
         }
+        if(setupBracketCount != -1) {
+            for(let char of line) {
+                if(char === "{") setupBracketCount++;
+                else if(char === "}") {
+                    if(--setupBracketCount == 0) {
+                        // console.log("----END OF DRAW LOOP RIGHT HERE: Line " + maxLineNumber);
+                        setupBracketCount = -1;
+                        setupEnd = maxLineNumber;
+                    }
+                }
+            }
+        }
     }
-    return {maxLineNumber: maxLineNumber, drawLoopEnd: drawLoopEnd};
+    return {maxLineNumber: maxLineNumber, drawLoopEnd: drawLoopEnd, setupEnd: setupEnd};
 }
 
 function isLineNumber(str) {
@@ -128,12 +146,41 @@ function insertDrawEnd(str) {
     keyAction("HOME");
     for(let i = 0; i < lineInfo.maxLineNumber - lineInfo.drawLoopEnd; i++) {
         keyAction("UP");
+        keyAction("HOME");
     }
     keyAction("NEWLINE");
 
     insertCode(str);
     keyAction("NEWLINE");
 }
+
+function insertSetupEnd(str) {
+    console.log('inserting ' + str);
+    let codeMirrorContainer = document.getElementsByClassName('CodeMirror-code')[0]
+    let lineInfo = findEndOfDraw(codeMirrorContainer.innerText);
+    
+
+    keyAction("PGDOWN");
+    keyAction("HOME");
+    for(let i = 0; i < lineInfo.maxLineNumber - lineInfo.setupEnd; i++) {
+        keyAction("UP");
+        keyAction("HOME");
+    }
+    keyAction("NEWLINE");
+
+    insertCode(str);
+    keyAction("NEWLINE");
+}
+
+function clickPlay() {
+    let playBtn = document.getElementsByClassName("toolbar__play-button")[0]
+    playBtn.dispatchEvent(new MouseEvent("click", {
+        view: window,
+        bubbles: true,
+        cancelable: true,
+    }));
+}
+
 
 function readLastConsoleMessage() {
     let consoleContainer = document.getElementsByClassName('preview-console__messages')[0];
@@ -149,9 +196,23 @@ var observeConsole = function(mutationsList) {
             let message = readLastConsoleMessage();
             (async () => {
                 const response = await chrome.runtime.sendMessage({message: message});
-                // do something with response here, not outside the function
                 console.log(response);
               })();
         }
     }
+}
+
+function parseEditorCode() {
+    let codeMirrorContainer = document.getElementsByClassName('CodeMirror-code')[0]
+    let codeArr = codeMirrorContainer.innerText.split('\n');
+
+    let newCode = "";
+    for(let line of codeArr) {
+        if(!isLineNumber(line)) {
+            newCode += line + "\n";
+        }
+    }
+    
+    return newCode;
+    
 }

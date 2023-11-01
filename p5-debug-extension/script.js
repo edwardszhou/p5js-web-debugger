@@ -2,8 +2,9 @@ let newVarValue;
 
 window.onload = () => {
     let submitBtn = document.getElementById('submit-btn');
+    let runSketchBtn = document.getElementById('run-sketch-btn');
 
-    submitBtn.addEventListener('click', (tab)=> {
+    submitBtn.addEventListener('click', ()=> {
         console.log('clicked');
     
         let inputText = document.getElementById('variable-input').value;
@@ -20,6 +21,17 @@ window.onload = () => {
         document.body.appendChild(newVarParagraph);
         newVarParagraph.appendChild(newVarValue);
     })
+
+    runSketchBtn.addEventListener('click', ()=> {
+        (async () => {
+            const [tab] = await chrome.tabs.query({active: true, lastFocusedWindow: true});
+            const response = await chrome.tabs.sendMessage(tab.id, {type: 'runSketch'});
+            // document.body.innerText += response.string;
+            iframe.contentWindow.postMessage(response.string, "*");
+          })();
+    })
+
+    const iframe = document.getElementById('sandbox');
 }
 
 function highlightVars() {
@@ -41,7 +53,7 @@ function highlightVars() {
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
       if (request.message && newVarValue){
-        newVarValue.innerText = request.message;
+        newVarValue.innerText = request.message.slice(11);
       }
         
     }

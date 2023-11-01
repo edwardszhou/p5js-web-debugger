@@ -11,12 +11,15 @@
         "activeTab",
         "tabs",
         "scripting"
-      ],
+    ],
     "content_scripts": [
       {
         "matches": ["https://editor.p5js.org/*"],
         "css": ["style.css"],
         "js": ["content-script.js"]
       }
-    ]
+    ],
+    "sandbox": {
+      "pages": ["sandbox.html"]
+    }
   }
