@@ -20,8 +20,10 @@ chrome.runtime.onMessage.addListener( function(req, sender, sendResponse) {
     console.log('received')
     if(req.varName) {
         highlightVars(req.varName);
-        insertSetupEnd("frameRate(1)");
+        insertSetupEnd("frameRate(0.5)");
         insertDrawEnd("console.log(\'DEBUGTRACK: Loop #\' + frameCount + \': " + req.varName + " = \' + " + req.varName + ")");
+        // this allows for pressing spacebar to pause/play each frame!
+        insertLoopControl("function keyPressed() {if (keyCode === 32) {loop();setTimeout(noLoop(), 100)}}")
         clickPlay();
 
         var consoleObserver = new MutationObserver(observeConsole);
