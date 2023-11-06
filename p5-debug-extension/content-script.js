@@ -25,6 +25,7 @@ chrome.runtime.onMessage.addListener( function(req, sender, sendResponse) {
         // this allows for pressing spacebar to pause/play each frame!
         insertLoopControl("function keyPressed() {if (keyCode === 32) {loop();setTimeout(noLoop(), 100)}}")
         clickPlay();
+        clickCanvas();
 
         var consoleObserver = new MutationObserver(observeConsole);
         consoleObserver.observe(document.getElementsByClassName('preview-console__messages')[0].firstChild, {childList: true});
@@ -204,6 +205,15 @@ function clickPlay() {
     }));
 }
 
+function clickCanvas() {
+    let canvasContainer = document.getElementsByClassName("preview-frame__content")[0]
+    canvasContainer.dispatchEvent(new MouseEvent("click", {
+        view: window,
+        bubbles: true,
+        cancelable: true,
+    }));
+    console.log("canvas clicked!")
+}
 
 function readLastConsoleMessage() {
     let consoleContainer = document.getElementsByClassName('preview-console__messages')[0];
