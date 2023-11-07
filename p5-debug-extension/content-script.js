@@ -1,3 +1,5 @@
+
+// return highlighting
 document.body.addEventListener('keydown', (e)=> {
     if(e.altKey) {
         let keywords = document.getElementsByClassName('cm-keyword');
@@ -15,7 +17,22 @@ document.body.addEventListener('keyup', ()=> {
     }
 })
 
+function highlightVars(response) {
+    let vars = document.getElementsByClassName('cm-variable');
+    for(let word of vars) {
+        if(word.textContent == response) {
+            word.classList.add("bright-red");
+        }
+    }
+    let defs = document.getElementsByClassName('cm-def');
+    for(let word of defs) {
+        if(word.textContent == response) {
+            word.classList.add("bright-red");
+        }
+    }
+}
 
+// communication with popup
 chrome.runtime.onMessage.addListener( function(req, sender, sendResponse) {
     console.log('received')
     if(req.varName) {
@@ -33,21 +50,7 @@ chrome.runtime.onMessage.addListener( function(req, sender, sendResponse) {
 
 });
 
-function highlightVars(response) {
-    let vars = document.getElementsByClassName('cm-variable');
-    for(let word of vars) {
-        if(word.textContent == response) {
-            word.classList.add("bright-red");
-        }
-    }
-    let defs = document.getElementsByClassName('cm-def');
-    for(let word of defs) {
-        if(word.textContent == response) {
-            word.classList.add("bright-red");
-        }
-    }
-}
-
+// manipulate window via event dispatch
 function keyAction(action) {
     let codeMirrorContainer = document.getElementsByClassName('CodeMirror-code')[0]
     if(action == "NEWLINE") {
@@ -66,8 +69,10 @@ function keyAction(action) {
         codeMirrorContainer.dispatchEvent(new KeyboardEvent('keydown', {'bubbles': true, 'code': 'End', 'key': 'End', 'keyCode':35}));
     }
     else if(action == "PGDOWN") {
-        console.log("hi");
         codeMirrorContainer.dispatchEvent(new KeyboardEvent('keydown', {'bubbles': true, 'code': 'ArrowDown', 'key': 'ArrowDown', 'keyCode':40, 'ctrlKey': true}));
+    }
+    else if(action == "PGUP") {
+        codeMirrorContainer.dispatchEvent(new KeyboardEvent('keydown', {'bubbles': true, 'code': 'ArrowUp', 'key': 'ArrowUp', 'keyCode':38, 'ctrlKey': true}));
     }
 }
 
@@ -78,8 +83,10 @@ function insertCode(str) {
     }
 }
 
-function findEndOfDraw(str) {
-    codeArr = str.split('\n');
+// NEEDS FIXING (SIMILAR TO parseEditorCode) TO READ ALL CODE
+function findFuncEnds() {
+    let codeMirrorContainer = document.getElementsByClassName('CodeMirror-code')[0];
+    let codeArr = codeMirrorContainer.innerText.split('\n');
 
     const drawLine = "function draw() {"
     const setupLine = "function setup() {"
@@ -93,15 +100,15 @@ function findEndOfDraw(str) {
     for(let line of codeArr) {
         if(isLineNumber(line)) {
             maxLineNumber = parseInt(line);
-            // console.log("LINE NUMBER: " + maxLineNumber);
+            console.log("LINE NUMBER: " + maxLineNumber);
         } else if (line.replace(/\s/g, "") === drawLine.replaceAll(/\s/g,"")) {
             drawBracketCount = 0;
-            // console.log("THIS IS FUNCTION DRAW RIGHT HERE: " + line);
+            console.log("THIS IS FUNCTION DRAW RIGHT HERE: " + line);
         }
         else if(line.replace(/\s/g, "") === setupLine.replaceAll(/\s/g,"")){
             setupBracketCount = 0;
-            // console.log(bracketCount + " brackets");
-            // console.log("This is a line: " + line);
+            console.log(setupBracketCount + " brackets");
+            console.log("This is a line: " + line);
         }
 
         if(drawBracketCount != -1) {
@@ -109,7 +116,7 @@ function findEndOfDraw(str) {
                 if(char === "{") drawBracketCount++;
                 else if(char === "}") {
                     if(--drawBracketCount == 0) {
-                        // console.log("----END OF DRAW LOOP RIGHT HERE: Line " + maxLineNumber);
+                        console.log("----END OF DRAW LOOP RIGHT HERE: Line " + maxLineNumber);
                         drawBracketCount = -1;
                         drawLoopEnd = maxLineNumber;
                     }
@@ -121,7 +128,7 @@ function findEndOfDraw(str) {
                 if(char === "{") setupBracketCount++;
                 else if(char === "}") {
                     if(--setupBracketCount == 0) {
-                        // console.log("----END OF DRAW LOOP RIGHT HERE: Line " + maxLineNumber);
+                        console.log("----END OF SETUP LOOP RIGHT HERE: Line " + maxLineNumber);
                         setupBracketCount = -1;
                         setupEnd = maxLineNumber;
                     }
@@ -138,8 +145,7 @@ function isLineNumber(str) {
 
 function insertDrawEnd(str) {
     console.log('inserting ' + str);
-    let codeMirrorContainer = document.getElementsByClassName('CodeMirror-code')[0]
-    let lineInfo = findEndOfDraw(codeMirrorContainer.innerText);
+    let lineInfo = findFuncEnds();
     
 
     keyAction("PGDOWN");
@@ -156,8 +162,7 @@ function insertDrawEnd(str) {
 
 function insertSetupEnd(str) {
     console.log('inserting ' + str);
-    let codeMirrorContainer = document.getElementsByClassName('CodeMirror-code')[0]
-    let lineInfo = findEndOfDraw(codeMirrorContainer.innerText);
+    let lineInfo = findFuncEnds();
     
 
     keyAction("PGDOWN");
@@ -181,7 +186,7 @@ function clickPlay() {
     }));
 }
 
-
+// console reading
 function readLastConsoleMessage() {
     let consoleContainer = document.getElementsByClassName('preview-console__messages')[0];
     if(consoleContainer.firstChild.lastChild) {
@@ -202,15 +207,27 @@ var observeConsole = function(mutationsList) {
     }
 }
 
+// getting editor code
 function parseEditorCode() {
-    let codeMirrorContainer = document.getElementsByClassName('CodeMirror-code')[0]
-    let codeArr = codeMirrorContainer.innerText.split('\n');
+    // let codeMirrorContainer = document.getElementsByClassName('CodeMirror-code')[0]
+    let lastLineNum = -1;
 
-    let newCode = "";
-    for(let line of codeArr) {
-        if(!isLineNumber(line)) {
-            newCode += line + "\n";
-        }
+    let newCode = ``;
+
+    
+    // for(let line of codeArr) {
+    //     if(!isLineNumber(line)) {
+    //         newCode += line + "\n";
+    //     }
+    // }
+    keyAction("PGDOWN");
+    keyAction("HOME");
+    while(lastLineNum != 1) {
+        let lineContent = document.getElementsByClassName('CodeMirror-activeline')[0].innerText.split('\n')
+        lastLineNum = parseInt(lineContent[0])
+        newCode = lineContent[1] + "\n" + newCode;
+        keyAction("UP");
+        keyAction("HOME");
     }
     
     return newCode;
