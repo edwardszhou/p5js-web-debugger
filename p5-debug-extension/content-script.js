@@ -37,9 +37,12 @@ chrome.runtime.onMessage.addListener( function(req, sender, sendResponse) {
     console.log('received')
     if(req.varName) {
         highlightVars(req.varName);
-        insertSetupEnd("frameRate(1)");
+        insertSetupEnd("frameRate(0.5)");
         insertDrawEnd("console.log(\'DEBUGTRACK: Loop #\' + frameCount + \': " + req.varName + " = \' + " + req.varName + ")");
+        // this allows for pressing spacebar to pause/play each frame!
+        insertLoopControl("function keyPressed() {if (keyCode === 32) {loop();setTimeout(noLoop(), 100)}}")
         clickPlay();
+        clickCanvas();
 
         var consoleObserver = new MutationObserver(observeConsole);
         consoleObserver.observe(document.getElementsByClassName('preview-console__messages')[0].firstChild, {childList: true});
@@ -93,6 +96,7 @@ function findFuncEnds() {
     let maxLineNumber = 0;
     let drawLoopEnd;
     let setupEnd;
+    let sketchEnd;
     let drawBracketCount = -1;
     let setupBracketCount = -1;
 
@@ -119,6 +123,7 @@ function findFuncEnds() {
                         console.log("----END OF DRAW LOOP RIGHT HERE: Line " + maxLineNumber);
                         drawBracketCount = -1;
                         drawLoopEnd = maxLineNumber;
+                        sketchEnd = maxLineNumber + 1;
                     }
                 }
             }
@@ -136,7 +141,7 @@ function findFuncEnds() {
             }
         }
     }
-    return {maxLineNumber: maxLineNumber, drawLoopEnd: drawLoopEnd, setupEnd: setupEnd};
+    return {maxLineNumber: maxLineNumber, drawLoopEnd: drawLoopEnd, setupEnd: setupEnd, sketchEnd: sketchEnd};
 }
 
 function isLineNumber(str) {
@@ -177,6 +182,25 @@ function insertSetupEnd(str) {
     keyAction("NEWLINE");
 }
 
+function insertLoopControl(str) {
+    console.log('inserting ' + str);
+    let codeMirrorContainer = document.getElementsByClassName('CodeMirror-code')[0]
+    let lineInfo = findEndOfDraw(codeMirrorContainer.innerText);
+    
+    // if we still make it find the spot right under drawLoopEnd, then we can easily have it delete everything older/repeated under?
+    keyAction("PGDOWN");
+    keyAction("HOME");
+    for(let i = 0; i < lineInfo.maxLineNumber - lineInfo.sketchEnd; i++) {
+        keyAction("UP");
+        keyAction("HOME");
+    }
+    keyAction("NEWLINE");
+
+    insertCode(str);
+    keyAction("NEWLINE");
+
+}
+
 function clickPlay() {
     let playBtn = document.getElementsByClassName("toolbar__play-button")[0]
     playBtn.dispatchEvent(new MouseEvent("click", {
@@ -187,6 +211,16 @@ function clickPlay() {
 }
 
 // console reading
+function clickCanvas() {
+    let canvasContainer = document.getElementsByClassName("preview-frame__content")[0]
+    canvasContainer.dispatchEvent(new MouseEvent("click", {
+        view: window,
+        bubbles: true,
+        cancelable: true,
+    }));
+    console.log("canvas clicked!")
+}
+
 function readLastConsoleMessage() {
     let consoleContainer = document.getElementsByClassName('preview-console__messages')[0];
     if(consoleContainer.firstChild.lastChild) {
