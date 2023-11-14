@@ -6,7 +6,9 @@ FLAWS + TODO:
 ->  in content-script.js, separates p5Setup (actual setup function) when createCanvas is called. 
     Should ideally ONLY have createCanvas in setup and call everything else in p5Setup.
 ->  cannot read from multiple .js files or any packages delivered via cdn, accessing other files via click event dispatch works but also force closes extension
+    (see content-script.js - parseFileCode, getAllJsFiles, getJsCode)
     Should ideally have everything run as iframe in the webpage itself and do away with the extension's popup itself
+        -> how to deal with video/image files?
 ->  implement variable tracking (create new HTML element every time a variable is declared in code?)
 ->  integrate Eunice's openai stuff
 ->  make everything look pretty
