@@ -25,13 +25,14 @@ window.onload = () => {
     runSketchBtn.addEventListener('click', ()=> {
         (async () => {
             const [tab] = await chrome.tabs.query({active: true, lastFocusedWindow: true});
-            const response = await chrome.tabs.sendMessage(tab.id, {type: 'runSketch'});
-            // document.body.innerText += response.string;
-            iframe.contentWindow.postMessage(response.string, "*");
+            await chrome.tabs.sendMessage(tab.id, {type: 'runSketch'});
+            // console.log('message 1 sent')
+            // const iframe = document.getElementById('sandbox');
+            // iframe.contentWindow.postMessage(response.string, "*");
           })();
     })
 
-    const iframe = document.getElementById('sandbox');
+
 }
 
 function highlightVars() {
@@ -55,6 +56,16 @@ chrome.runtime.onMessage.addListener(
       if (request.message && newVarValue){
         newVarValue.innerText = request.message.slice(11);
       }
+
+      if(request.jsCode) {
+        console.log('message 2 received')
+        const iframe = document.getElementById('sandbox');
+        iframe.contentWindow.postMessage(request.jsCode, "*");
+      }
         
     }
-  );
+);
+
+function runSketchMessage() {
+
+}

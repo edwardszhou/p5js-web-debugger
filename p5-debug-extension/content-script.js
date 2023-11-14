@@ -48,7 +48,14 @@ chrome.runtime.onMessage.addListener( function(req, sender, sendResponse) {
         consoleObserver.observe(document.getElementsByClassName('preview-console__messages')[0].firstChild, {childList: true});
         sendResponse({highlighted:true});
     } else if (req.type == 'runSketch'){
-        sendResponse({string:parseEditorCode()});
+        // console.log('message 1 received')
+        // console.log(getAllJsFiles());
+        // let code = getJsCode(['sketch.js']);
+        // chrome.runtime.sendMessage({jsCode: code});
+        // console.log('message 2 received')
+        sendJsCode(parseFileCode('sketch.js'));
+        // sendResponse({string: code });
+        
     }
 
 });
@@ -242,28 +249,103 @@ var observeConsole = function(mutationsList) {
 }
 
 // getting editor code
-function parseEditorCode() {
-    // let codeMirrorContainer = document.getElementsByClassName('CodeMirror-code')[0]
+function parseFileCode(fileName) {
+
+    let files = document.getElementsByClassName("sidebar__file-item-name");
+    let fileFound = false;
+    for(let file of files) {
+        if(file.textContent == fileName) {
+            file.dispatchEvent(new MouseEvent("click", {
+                view: window,
+                bubbles: true,
+                cancelable: true,
+                preventDefault: true
+            }));
+            fileFound = true;
+            break;
+        }
+    }
+    if(!fileFound) {
+        throw new Error("File not found in p5 editor");
+    }
+
     let lastLineNum = -1;
+    let newCode = `\n`;
 
-    let newCode = ``;
-
-    
-    // for(let line of codeArr) {
-    //     if(!isLineNumber(line)) {
-    //         newCode += line + "\n";
-    //     }
-    // }
     keyAction("PGDOWN");
     keyAction("HOME");
     while(lastLineNum != 1) {
         let lineContent = document.getElementsByClassName('CodeMirror-activeline')[0].innerText.split('\n')
         lastLineNum = parseInt(lineContent[0])
-        newCode = lineContent[1] + "\n" + newCode;
+        
+        if(!lineContent[1].includes('createCanvas')) { // DOES NOT INCLUDE CREATE CANVAS
+            newCode = lineContent[1] + `\n` + newCode;
+        } else {
+            newCode = lineContent[1] + `\np5Setup();} function p5Setup(){\n` + newCode
+        }
+        
         keyAction("UP");
         keyAction("HOME");
     }
     
     return newCode;
     
+}
+
+function getAllJsFiles() {
+    let files = document.getElementsByClassName("sidebar__file-item-name");
+
+    for(let file of files) {
+        if(file.textContent == "index.html") {
+            file.dispatchEvent(new MouseEvent("click", {
+                view: window,
+                bubbles: true,
+                cancelable: true,
+                preventDefault: true
+            }));
+            break;
+        }
+    }
+
+    keyAction("PGDOWN");
+    keyAction("HOME");
+
+    let lastLineNum = -1;
+    let jsFiles = [];
+
+    while(lastLineNum != 1) {
+        let lineContent = document.getElementsByClassName('CodeMirror-activeline')[0].innerText.split('\n')
+        lastLineNum = parseInt(lineContent[0])
+        if(lineContent[1].replace(/[\u200B-\u200D\uFEFF]/g, '').includes('.js"></script>')) {
+            // console.log(lineContent.split('"'))
+            jsFiles.push(lineContent[1].split('"')[1])
+        }
+
+        keyAction("UP");
+        keyAction("HOME");
+    }
+
+    return jsFiles;
+}
+
+function getJsCode(jsFiles) {
+
+    let jsCode = ``
+
+    for(let jsFile of jsFiles) {
+        if(jsFile.includes("https://")){
+            // console.log("Not searched: " + jsFile)
+            continue;
+        } 
+        jsCode += parseFileCode(jsFile);
+    }
+
+    // console.log(jsCode)
+
+    return jsCode;
+
+}
+
+async function sendJsCode(str) {
+    await chrome.runtime.sendMessage({jsCode: str});
 }

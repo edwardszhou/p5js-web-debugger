@@ -1,6 +1,9 @@
 window.addEventListener('message', async function (event) {
 
     let newData = `${event.data.trim().replace(/[\u200B-\u200D\uFEFF]/g, '')}`
+
+    window.frameCounter = 0
+
     // let data2 = data.trim().replace(/[\u200B-\u200D\uFEFF]/g, '').split(/[\s,\t,\n]+/).join(' ');
 
     // ----- start ----- these lines allow injecting to the start of the draw loop
@@ -19,9 +22,30 @@ window.addEventListener('message', async function (event) {
     //         console.log("Equal: \"" + newData.charAt(i) + "\" == \"" + data2.charAt(i) + "\"" + i);
     //     }
     // }
+    let customNoiseSeed = Math.floor(Math.random() * 1000)
+    let customRandomSeed = Math.floor(Math.random() * 1000)
+    let noDrawScript = newData.replace(`function draw`, `function p5Draw`).replace(`function p5Setup(){`, `function p5Setup(){noiseSeed(${customNoiseSeed});randomSeed(${customRandomSeed});`);
+
+    // noDrawScript = noDrawScript.replace(`function setup {`, `function setup {noiseSeed(${customNoiseSeed});randomSeed(${customRandomSeed})`);
+
+    noDrawScript += `\nfunction keyPressed(){
+        if(keyCode === RIGHT_ARROW) {
+            p5Draw();
+            window.frameCounter++;
+        } else if(keyCode === LEFT_ARROW) {
+            p5Setup();
+            window.frameCounter--;
+            for(let i = 0; i < window.frameCounter; i++) {
+                p5Draw();
+            }
+            
+        }\n
+    }`
+
+    console.log(noDrawScript);
 
     var newScript = document.createElement("script");
-    newScript.text = newData;
+    newScript.text = noDrawScript;
     newScript.async = false;
 
     var newScript2 = document.createElement("script");
