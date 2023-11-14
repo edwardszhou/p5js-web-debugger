@@ -2,45 +2,98 @@ window.addEventListener('message', async function (event) {
 
     let newData = `${event.data.trim().replace(/[\u200B-\u200D\uFEFF]/g, '')}`
 
-    window.frameCounter = 0
+    let frameCounter = 0
+    let fps = 5
+    let sketchPlaying = false;
 
-    // let data2 = data.trim().replace(/[\u200B-\u200D\uFEFF]/g, '').split(/[\s,\t,\n]+/).join(' ');
+    let drawLoop = function () {
+        console.log('loopin')
+        p5Draw();
+        frameCounter++;
+        frameDisplay.textContent = `Frame Number: ${frameCounter}`;
+        if(sketchPlaying) {
+            setTimeout(drawLoop, Math.floor(1000/fps));
+        }
+    };
 
-    // ----- start ----- these lines allow injecting to the start of the draw loop
-    console.log(newData);
-    let codeLines = codeList(newData)
-    newData = insertDrawStart("  background('red');", codeLines)
-    console.log(newData)
-    // ----- end -----
+    let sketchFps = document.getElementById('sketch-fps');
+    let frameDisplay = document.getElementById('frame-display');
 
-    // console.log(data2);
-    // for(let i = 0; i < newData.length; i++) {
-    //     if(newData.charAt(i) != data2.charAt(i)) {
-    //         console.log("NOT EQUAL: \"" + newData.charAt(i) + "\" != \"" + data2.charAt(i) + "\"" + i);
-    //         console.log(newData.charCodeAt(i))
-    //     } else {
-    //         console.log("Equal: \"" + newData.charAt(i) + "\" == \"" + data2.charAt(i) + "\"" + i);
-    //     }
-    // }
+    sketchFps.addEventListener('input', ()=> {
+        fps = sketchFps.value;
+        console.log(sketchFps.value);
+        document.getElementById('fps-display').innerText = `FPS: ${fps}`;
+    })
+
+    document.getElementById('prev-frame-btn').addEventListener('click', ()=> {
+        if(sketchPlaying) return;
+
+        p5Setup();
+        frameCounter--;
+        frameDisplay.textContent = `Frame Number: ${Math.max(0, frameCounter)}`;
+        for(let i = 0; i < frameCounter; i++) {
+            p5Draw();
+        }
+    })
+    document.getElementById('next-frame-btn').addEventListener('click', ()=> {
+        if(sketchPlaying) return;
+
+        p5Draw();
+        frameCounter++;
+        frameDisplay.textContent = `Frame Number: ${frameCounter}`;
+    })
+    document.getElementById('play-pause-btn').addEventListener('click', ()=> {
+        if(sketchPlaying) {
+            sketchPlaying = false;
+            console.log('no longer playing');
+            document.getElementById('play-pause-btn').textContent = 'Play';
+        } else {
+            sketchPlaying = true;
+            console.log('now playing');
+            drawLoop();
+            document.getElementById('play-pause-btn').textContent = 'Pause'
+        }
+    })
+
+    document.getElementById('reset-btn').addEventListener('click', ()=> {
+
+        sketchPlaying = false;
+        document.getElementById('play-pause-btn').textContent = 'Play';
+
+        setTimeout(()=>{
+            p5Setup();
+            frameCounter = 0;
+            frameDisplay.textContent = `Frame Number: ${frameCounter}`;
+        }, Math.floor(1000/fps) + 1);
+        
+    })
+
+    document.getElementById('jump-btn').addEventListener('click', ()=> {
+
+        let newFrame = parseInt(document.getElementById('jump-input').value);
+        document.getElementById('jump-input').value = ``;
+        if(isNaN(newFrame)) return;
+
+        frameCounter = newFrame;
+
+        p5Setup();
+        frameDisplay.textContent = `Frame Number: ${frameCounter}`;
+        for(let i = 0; i < frameCounter; i++) {
+            p5Draw();
+        }
+    })
+
+    // // ----- start ----- these lines allow injecting to the start of the draw loop
+    // console.log(newData);
+    // let codeLines = codeList(newData)
+    // newData = insertDrawStart("  console.log(x);", codeLines)
+    // console.log(newData)
+    // // ----- end -----
+
     let customNoiseSeed = Math.floor(Math.random() * 1000)
     let customRandomSeed = Math.floor(Math.random() * 1000)
     let noDrawScript = newData.replace(`function draw`, `function p5Draw`).replace(`function p5Setup(){`, `function p5Setup(){noiseSeed(${customNoiseSeed});randomSeed(${customRandomSeed});`);
 
-    // noDrawScript = noDrawScript.replace(`function setup {`, `function setup {noiseSeed(${customNoiseSeed});randomSeed(${customRandomSeed})`);
-
-    noDrawScript += `\nfunction keyPressed(){
-        if(keyCode === RIGHT_ARROW) {
-            p5Draw();
-            window.frameCounter++;
-        } else if(keyCode === LEFT_ARROW) {
-            p5Setup();
-            window.frameCounter--;
-            for(let i = 0; i < window.frameCounter; i++) {
-                p5Draw();
-            }
-            
-        }\n
-    }`
 
     console.log(noDrawScript);
 
