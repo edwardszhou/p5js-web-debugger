@@ -9,6 +9,7 @@ FLAWS + TODO:
     (see content-script.js - parseFileCode, getAllJsFiles, getJsCode)
     Should ideally have everything run as iframe in the webpage itself and do away with the extension's popup itself
         -> how to deal with video/image files?
+->  Stepping back is currently very slow/inefficient with bigger projects, not sure how to optimize without insane memory usage
 ->  implement variable tracking (create new HTML element every time a variable is declared in code?)
 ->  integrate Eunice's openai stuff
 ->  make everything look pretty
