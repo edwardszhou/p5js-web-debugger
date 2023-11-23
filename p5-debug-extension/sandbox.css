@@ -1,5 +1,6 @@
 body {
-    background-color: lightblue;
+    background-color: white;
+    color: grey;
   }
 
 .buttons button {
@@ -11,12 +12,29 @@ body {
   font-size: 16px;
   cursor: pointer;
   padding: 5px 12px;
-  margin: 4px 2px;
+  margin: 2px 2px;
   text-align: center;
   text-decoration: none;
   display: inline-block;
   box-shadow: rgba(0, 0, 0, .2) 0 3px 5px -1px,rgba(0, 0, 0, .14) 0 6px 10px 0,rgba(0, 0, 0, .12) 0 1px 18px 0;
   box-sizing: border-box;
-  
+}
 
+.flexbox-container {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.frame-tools {
+  display:flex;
+  width: 300px;
+  margin: 2px 2px;
+  justify-content: center;
+  border: 1px solid black;
+}
+
+#sketch-fps{
+  width: 100;
 }
