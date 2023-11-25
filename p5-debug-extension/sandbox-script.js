@@ -101,10 +101,17 @@ window.addEventListener('message', async function (event) {
         }
     })
     // Nov 25 testing
-    console.log("raw New Data: ", newData)
+    //console.log("raw New Data: ", newData)
     console.log("code list data ", codeList(newData))
     let func_ends = findFuncEnds(newData)
     console.log("findFuncEnds Function returns: ", func_ends)
+    //testing adding function to end of sketch
+    let codeLines = codeList(newData)
+    newData = insertNewFunc("  console.log('here is new function placeholder lalala');", codeLines, 'sketchEnd')
+    console.log(newData)
+
+
+    
     // // ----- start ----- these lines allow injecting to the start of the draw loop
     // console.log(newData);
     // let codeLines = codeList(newData)
@@ -138,7 +145,7 @@ function codeList(data) {
     return codeLines
 }
 function findFuncEnds(data) {
-    let codeArr = codeList(data)
+    let codeArr = data
 
     const drawLine = "function draw() {"
     const setupLine = "function setup() {"
@@ -198,6 +205,15 @@ function findFuncEnds(data) {
 
 function isLineNumber(str) {
     return !isNaN(parseInt(str));
+}
+
+function insertNewFunc(str, codeLines, location){
+    // location: str that represents location to insert (i.e 'drawLoopEnd', 'sketchEnd', 'setupEnd',)
+    console.log('inserting ' + str);
+    let insertIndex = findFuncEnds(codeLines)[location];
+    console.log("location: ", insertIndex)
+    codeLines.splice(insertIndex, 0, str)
+    return codeLines.join("\n")
 }
 
 function findDrawStart(codeLines) {
