@@ -107,7 +107,7 @@ window.addEventListener('message', async function (event) {
     console.log("findFuncEnds Function returns: ", func_ends)
     //testing adding function to end of sketch
     let codeLines = codeList(newData)
-    newData = insertNewFunc("  console.log('here is new function placeholder lalala');", codeLines, 'sketchEnd')
+    newData = insertHere("  console.log('here is new function placeholder lalala');", codeLines, 'sketchEnd')
     console.log(newData)
 
 
@@ -207,7 +207,7 @@ function isLineNumber(str) {
     return !isNaN(parseInt(str));
 }
 
-function insertNewFunc(str, codeLines, location){
+function insertHere(str, codeLines, location){
     // location: str that represents location to insert (i.e 'drawLoopEnd', 'sketchEnd', 'setupEnd',)
     console.log('inserting ' + str);
     let insertIndex = findFuncEnds(codeLines)[location];
