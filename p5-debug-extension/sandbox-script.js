@@ -100,7 +100,9 @@ window.addEventListener('message', async function (event) {
             p5Draw();
         }
     })
-
+    // Nov 25 testing
+    let func_ends = findFuncEnds(newData)
+    console.log("findFuncEnds Function returns: ", func_ends)
     // // ----- start ----- these lines allow injecting to the start of the draw loop
     // console.log(newData);
     // let codeLines = codeList(newData)
@@ -132,6 +134,65 @@ function codeList(data) {
     let codeLines = data.split("\n") //split based on "\n"
     console.log(codeLines)
     return codeLines
+}
+function findFuncEnds(data) {
+    let codeArr = codeList(data)
+
+    const drawLine = "function draw() {"
+    const setupLine = "function setup() {"
+    let maxLineNumber = 0;
+    let drawLoopEnd;
+    let setupEnd;
+    let sketchEnd;
+    let drawBracketCount = -1;
+    let setupBracketCount = -1;
+
+
+    for(let line of codeArr) {
+        if(isLineNumber(line)) {
+            maxLineNumber = parseInt(line);
+            console.log("LINE NUMBER: " + maxLineNumber);
+        } else if (line.replace(/\s/g, "") === drawLine.replaceAll(/\s/g,"")) {
+            drawBracketCount = 0;
+            console.log("THIS IS FUNCTION DRAW RIGHT HERE: " + line);
+        }
+        else if(line.replace(/\s/g, "") === setupLine.replaceAll(/\s/g,"")){
+            setupBracketCount = 0;
+            console.log(setupBracketCount + " brackets");
+            console.log("This is a line: " + line);
+        }
+
+        if(drawBracketCount != -1) {
+            for(let char of line) {
+                if(char === "{") drawBracketCount++;
+                else if(char === "}") {
+                    if(--drawBracketCount == 0) {
+                        console.log("----END OF DRAW LOOP RIGHT HERE: Line " + maxLineNumber);
+                        drawBracketCount = -1;
+                        drawLoopEnd = maxLineNumber;
+                        sketchEnd = maxLineNumber + 1;
+                    }
+                }
+            }
+        }
+        if(setupBracketCount != -1) {
+            for(let char of line) {
+                if(char === "{") setupBracketCount++;
+                else if(char === "}") {
+                    if(--setupBracketCount == 0) {
+                        console.log("----END OF SETUP LOOP RIGHT HERE: Line " + maxLineNumber);
+                        setupBracketCount = -1;
+                        setupEnd = maxLineNumber;
+                    }
+                }
+            }
+        }
+    }
+    return {maxLineNumber: maxLineNumber, drawLoopEnd: drawLoopEnd, setupEnd: setupEnd, sketchEnd: sketchEnd};
+}
+
+function isLineNumber(str) {
+    return !isNaN(parseInt(str));
 }
 
 function findDrawStart(codeLines) {
