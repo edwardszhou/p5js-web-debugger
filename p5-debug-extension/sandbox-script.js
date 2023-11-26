@@ -64,12 +64,12 @@ window.addEventListener('message', async function (event) {
         if(sketchPlaying) {
             sketchPlaying = false;
             console.log('no longer playing');
-            document.getElementById('play-pause-btn').textContent = 'Play';
+            document.getElementById('play-pause-btn').textContent = '\u25BA';
         } else {
             sketchPlaying = true;
             console.log('now playing');
             drawLoop();
-            document.getElementById('play-pause-btn').textContent = 'Pause'
+            document.getElementById('play-pause-btn').textContent = '\u23F8'
         }
     })
 
