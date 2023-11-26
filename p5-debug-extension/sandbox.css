@@ -38,3 +38,8 @@ body {
 #sketch-fps{
   width: 100;
 }
+
+.fps-slider {
+  display: flex;
+  gap: 10px;
+}
