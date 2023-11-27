@@ -25,7 +25,7 @@ window.addEventListener('message', async function (event) {
     let sketchPlaying = false;
 
     let drawLoop = function () {
-        console.log('loopin')
+        console.log('loopin');
         p5Draw();
         frameCounter++;
         frameDisplay.textContent = `Frame Number: ${frameCounter}`;
@@ -129,13 +129,16 @@ window.addEventListener('message', async function (event) {
     var newScript = document.createElement("script");
     newScript.text = noDrawScript;
     newScript.async = false;
+    newScript.id = 'sketch';
 
     var newScript2 = document.createElement("script");
     newScript2.src = 'p5.min.js';
     newScript2.async = false;
+    newScript2.id = 'p5';
 
     document.body.appendChild(newScript);
     document.body.appendChild(newScript2);
+
 });
 
 //generate a list holding each line of the code in newData
