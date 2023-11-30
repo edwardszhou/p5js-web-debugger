@@ -1,4 +1,93 @@
-.bright-red {
-    background-color: red !important;
-    color: pink !important;
+#debug-btn {
+    margin-left: auto;
+    margin-right: 1.25rem;
+
+    background-color: #d9d9d9;
+    border: none;
+    border-radius: 100%;
+    color: #333;
+    cursor: pointer;
+    width: 3.66667rem;
+    height: 3.66667rem;
+    text-align: center;
+    outline: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+#debug-btn:hover {
+    background-color: #ed225d;
+    color: white;
+}
+
+#debug-btn svg path {
+    fill: #333;
+}
+
+#debug-btn:hover svg path {
+    fill: white;
+}
+
+#pref-btn {
+    margin: 0;
+}
+
+.custom-overlay {
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba(0,0,0,0.5);
+}
+
+.custom-overlay-content {
+    align-items: center;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    width: 100%;
+}
+
+.popup {
+    background-color: #f0f0f0;
+    border: 1px solid #a6a6a6;
+    box-shadow: 0 12px 12px rgba(0,0,0,.16);
+
+    display: flex;
+    flex-flow: column;
+    padding-bottom: 2.08333rem;
+    position: relative;
+    width: 80%;
+    max-width: 1000px;
+    height: 80%;
+}
+
+.popup-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 1.66667rem;
+}
+
+.popup-title {
+    font-size: 1.75rem;
+}
+
+.popup-close {
+    color: #747474;
+    background-color: transparent;
+    border:none;
+    padding: 0.25rem;
+}
+
+.popup-close svg path {
+    fill: #747474;
+}
+.popup-close:hover svg path {
+    fill: black;
 }
