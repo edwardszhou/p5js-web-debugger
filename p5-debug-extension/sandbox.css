@@ -59,7 +59,7 @@ button {
   width: 300px;
   margin: 2px 2px;
   justify-content: center;
-  border: 1px solid black;
+  /* border: 1px solid black; */
 }
 
 #sketch-fps{
@@ -68,29 +68,43 @@ button {
 
 .fps-slider {
   display: flex;
-  gap: 10px;
+  /* align-items: center;
+  justify-content: center; */
+  /* height: 130px; */
+  margin: 0;
+  max-width: 600px;
+  width: 100%;
+  padding: 10px 0px;
+  /* border-radius: 25px;
+  background: #fff;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1); */
+  /* gap: 10px; */
 }
 
-
-/* .buttons button {
-  margin-left: auto;
-  margin-right: 1.25rem;
-
-  background-color: #d9d9d9;
-  border: none;
-  border-radius: 100%;
-  color: #333;
+.fps-slider input {
+  max-width: 400px;
+  width: 100%;
+  margin: 0;
+  appearance: none;
+  height: 3px;
+  border-radius: 25px;
+  /* background-color: #ededed;
+  box-shadow: 0 0 0 2px #ededed; */
+  overflow: hidden;
   cursor: pointer;
-  width: 3.66667rem;
-  height: 3.66667rem;
-  text-align: center;
-  outline: none;
+}
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-} */
+input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  cursor: grab;
+  appearance: none;
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+  /* border: 2px solid #fff; */
+  background-color: #333333;
+  box-shadow: -208px 0 0 200px #333333;
+}
 
 .buttons button:hover {
   background-color: #ed225d;
