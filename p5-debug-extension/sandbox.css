@@ -67,14 +67,14 @@ button {
 .frame-tools {
   display:flex;
   width: 600px;
-  margin: 2px 2px;
+  margin: 0px 0px;
   justify-content: center;
   align-items: center
   /* border: 1px solid black; */
 }
 
 #sketch-fps{
-  width: 100;
+  width: 250;
 }
 
 .fps-slider {
@@ -82,14 +82,16 @@ button {
   /* align-items: center;
   justify-content: center; */
   /* height: 130px; */
-  margin: 0;
+  margin: 0 0;
   max-width: 600px;
   width: 100%;
-  padding: 0px;
+  padding: 5 5px;
   /* border-radius: 25px;
   background: #fff;
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1); */
   /* gap: 10px; */
+  gap: 5px;
+  flex-direction: column;
 }
 
 .fps-slider input {
@@ -97,7 +99,7 @@ button {
   width: 100%;
   margin: 0;
   appearance: none;
-  height: 3px;
+  height: 6px;
   border-radius: 25px;
   /* background-color: #ededed;
   box-shadow: 0 0 0 2px #ededed; */
@@ -117,7 +119,31 @@ input::-webkit-slider-thumb {
   box-shadow: -208px 0 0 200px #333333;
 }
 
+
+input::-webkit-slider-thumb:hover {
+  -webkit-appearance: none;
+  cursor: grab;
+  appearance: none;
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+  /* border: 2px solid #fff; */
+  background-color: #ed225d;
+  box-shadow: -208px 0 0 200px #ed225d;
+}
+
 .buttons button:hover {
   background-color: #ed225d;
   color: white;
+}
+
+button:hover {
+  background-color: #ed225d;
+  color: white;
+}
+
+
+.fps-display {
+  font-size: 15;
+  font-family: 'Inconsolata', sans-serif;
 }
