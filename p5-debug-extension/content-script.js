@@ -411,10 +411,21 @@ function modifyToolbar() {
         popupClose.appendChild(xSvg);
 
         // INSERT IFRAME INTO POPUP
-        // "Run Sketch Here" BUTTON SHOULD BE THE ONLY THING OUTSIDE OF IFRAME IN POPUP
+        let sketchContainer = document.createElement('iframe');
+        sketchContainer.src = chrome.runtime.getURL(`sandbox.html`);
+        sketchContainer.id = 'sandbox';
+        sketchContainer.width = '100%';
+        sketchContainer.height = '100%';
+        popup.appendChild(sketchContainer);
 
         // adds modal to root page
         document.getElementsByClassName('editor-preview-container')[0].parentElement.appendChild(overlay);
+
+        // waits til iframe is loaded
+        sketchContainer.addEventListener('load', ()=> {
+            let jsCode = getJsCode(getAllJsFiles()); // gets all code, sends to iframe
+            sketchContainer.contentWindow.postMessage(jsCode, "*");
+        })
 
         // removes modal to root page on popup close
         popupClose.addEventListener('click', function() {

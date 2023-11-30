@@ -19,6 +19,10 @@
         "js": ["content-script.js"]
       }
     ],
+    "web_accessible_resources": [{
+      "resources": ["sandbox.html"],
+      "matches": ["https://editor.p5js.org/*"]
+    }],
     "sandbox": {
       "pages": ["sandbox.html"]
     }
