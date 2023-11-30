@@ -102,12 +102,12 @@ window.addEventListener('message', async function (event) {
     })
     // Nov 25 testing
     //console.log("raw New Data: ", newData)
-    console.log("code list data ", codeList(newData))
-    let func_ends = findFuncEnds(newData)
-    console.log("findFuncEnds Function returns: ", func_ends)
+    // console.log("code list data ", codeList(newData))
+    // let func_ends = findFuncEnds(newData)
+    // console.log("findFuncEnds Function returns: ", func_ends)
     //testing adding function to end of sketch
     let codeLines = codeList(newData)
-    newData = insertHere("  console.log('here is new function placeholder lalala');", codeLines, 'sketchEnd')
+    newData = insertHere("  console.log('here is new function placeholder lalala');", codeLines, 'drawLoopEnd')
     console.log(newData)
 
 
@@ -144,17 +144,15 @@ window.addEventListener('message', async function (event) {
 //generate a list holding each line of the code in newData
 function codeList(data) {
     let codeLines = data.split("\n") //split based on "\n"
-    //console.log(codeLines)
     return codeLines
 }
+
 function findFuncEnds(data) {
     let codeArr = data
 
-    const drawLine = "function draw() {"
-    const setupLine = "function setup() {"
+    const drawLine = "function draw()"
+    const setupLine = "function p5Setup()"
     let currLineCount = 0
-    let setupTempCounter = 0
-    //let maxLineNumber = 0;
     let drawLoopEnd;
     let setupEnd;
     let sketchEnd = codeArr.length + 1;
@@ -162,29 +160,23 @@ function findFuncEnds(data) {
     let setupBracketCount = -1;
 
     for(let line of codeArr) {
-        currLineCount ++
-        if(line === drawLine){
-            drawBracketCount = 0
+        if(line.includes(drawLine)){
+            drawBracketCount = 0;
+            console.log("----START OF DRAW LOOP RIGHT HERE: Line " + currLineCount);
         }
-        if(line === setupLine){
+        if(line.includes(setupLine)){
             setupBracketCount = 0
         }
         
-        if(drawBracketCount != -1){
-            for(let char of line) {
-
-            }
-        }
-        // for finding end of setup function
+        // for finding end of draw function
         if(drawBracketCount != -1) {
             for(let char of line) {
-                //console.log("line,char", char)
                 if(char === "{") drawBracketCount++;
                 else if(char === "}") {
                     if(--drawBracketCount == 0) {
                         console.log("----END OF DRAW LOOP RIGHT HERE: Line " + currLineCount);
                         drawBracketCount = -1;
-                        drawLoopEnd = currLineCount+1;
+                        drawLoopEnd = currLineCount;
                     }
                 }
             }
@@ -197,11 +189,12 @@ function findFuncEnds(data) {
                     if(--setupBracketCount == 0) {
                         console.log("----END OF SETUP LOOP RIGHT HERE: Line " + currLineCount);
                         setupBracketCount = -1;
-                        setupEnd = currLineCount+1;
+                        setupEnd = currLineCount;
                     }
                 }
             }
         }
+        currLineCount++;
     }
     return {drawLoopEnd: drawLoopEnd, setupEnd: setupEnd, sketchEnd: sketchEnd};
     }
@@ -212,25 +205,25 @@ function isLineNumber(str) {
 
 function insertHere(str, codeLines, location){
     // location: str that represents location to insert (i.e 'drawLoopEnd', 'sketchEnd', 'setupEnd',)
-    console.log('inserting ' + str);
+    // console.log('inserting ' + str);
     let insertIndex = findFuncEnds(codeLines)[location];
-    console.log("location: ", insertIndex)
+    // console.log("location: ", insertIndex)
     codeLines.splice(insertIndex, 0, str)
     return codeLines.join("\n")
 }
 
 function findDrawStart(codeLines) {
-    const setupLine = "function draw() {"
+    const setupLine = "function draw()"
 
     for (i=0;i<codeLines.length;i++){
-        if (codeLines[i] == setupLine){
-            return i+1
+        if (codeLines[i].includes(setupLine)){
+            return i+1;
         }
     }
 }
 
 function insertDrawStart(str, codeLines) {
-    console.log('inserting ' + str);
+    // console.log('inserting ' + str);
     let insertIndex = findDrawStart(codeLines);
     codeLines.splice(insertIndex, 0, str)
     return codeLines.join("\n")
