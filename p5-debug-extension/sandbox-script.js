@@ -15,6 +15,7 @@ FLAWS + TODO:
 ->  make everything look pretty
 
 */
+let trackedVars = [];
 
 window.addEventListener('message', async function (event) {
 
@@ -25,8 +26,8 @@ window.addEventListener('message', async function (event) {
     let sketchPlaying = false;
 
     let drawLoop = function () {
-        console.log('loopin');
         p5Draw();
+        displayVariables();
         frameCounter++;
         frameDisplay.textContent = `Frame Number: ${frameCounter}`;
         if(sketchPlaying) {
@@ -52,11 +53,14 @@ window.addEventListener('message', async function (event) {
         for(let i = 0; i < frameCounter; i++) {
             p5Draw();
         }
+        displayVariables();
     })
     document.getElementById('next-frame-btn').addEventListener('click', ()=> {
         if(sketchPlaying) return;
 
         p5Draw();
+        displayVariables();
+        
         frameCounter++;
         frameDisplay.textContent = `Frame Number: ${frameCounter}`;
     })
@@ -98,17 +102,17 @@ window.addEventListener('message', async function (event) {
         frameDisplay.textContent = `Frame Number: ${frameCounter}`;
         for(let i = 0; i < frameCounter; i++) {
             p5Draw();
+            displayVariables();
         }
     })
     // Nov 25 testing
-    //console.log("raw New Data: ", newData)
-    // console.log("code list data ", codeList(newData))
     // let func_ends = findFuncEnds(newData)
     // console.log("findFuncEnds Function returns: ", func_ends)
+
     //testing adding function to end of sketch
-    let codeLines = codeList(newData)
-    newData = insertHere("  console.log('here is new function placeholder lalala');", codeLines, 'drawLoopEnd')
-    console.log(newData)
+    // let codeLines = codeList(newData)
+    // newData = insertHere("  console.log('here is new function placeholder lalala');", codeLines, 'drawLoopEnd')
+    // console.log(newData)
 
 
     
@@ -124,20 +128,21 @@ window.addEventListener('message', async function (event) {
     let noDrawScript = newData.replace(`function draw`, `function p5Draw`).replace(`function p5Setup(){`, `function p5Setup(){noiseSeed(${customNoiseSeed});randomSeed(${customRandomSeed});`);
 
 
-    console.log(noDrawScript);
+    loadSketch(noDrawScript);
 
-    var newScript = document.createElement("script");
-    newScript.text = noDrawScript;
-    newScript.async = false;
-    newScript.id = 'sketch';
+    let varSubmitBtn = document.getElementById('variable-submit-btn');
+    varSubmitBtn.addEventListener('click', ()=> {
+        
+        let trackingVar = document.getElementById('variable-input').value;
 
-    var newScript2 = document.createElement("script");
-    newScript2.src = 'p5.min.js';
-    newScript2.async = false;
-    newScript2.id = 'p5';
-
-    document.body.appendChild(newScript);
-    document.body.appendChild(newScript2);
+        if(!noDrawScript.includes("let " + trackingVar) && !noDrawScript.includes("var " + trackingVar)) {
+            return;
+        }
+        let varContainer = document.createElement('p');
+        varContainer.textContent = `Tracking ${trackingVar}`
+        document.body.appendChild(varContainer);
+        trackedVars.push({name: trackingVar, container: varContainer});
+    })
 
 });
 
@@ -227,4 +232,30 @@ function insertDrawStart(str, codeLines) {
     let insertIndex = findDrawStart(codeLines);
     codeLines.splice(insertIndex, 0, str)
     return codeLines.join("\n")
+}
+
+function loadSketch(script) {
+    if(document.getElementById('p5')) {
+        document.body.remove(document.getElementById('p5'));
+        document.body.remove(document.getElementById('sketch'));
+    }
+
+    var newScript = document.createElement("script");
+    newScript.text = script;
+    newScript.async = false;
+    newScript.id = 'sketch';
+
+    var newScript2 = document.createElement("script");
+    newScript2.src = 'p5.min.js';
+    newScript2.async = false;
+    newScript2.id = 'p5';
+
+    document.body.appendChild(newScript);
+    document.body.appendChild(newScript2);
+}
+
+function displayVariables() {
+    for(let variable of trackedVars) {
+        variable.container.textContent = `${variable.name}: ${eval(variable.name)}`
+    }
 }
