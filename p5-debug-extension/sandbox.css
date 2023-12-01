@@ -29,7 +29,7 @@ hr {
   font-family: 'Inconsolata', Arial, Helvetica, sans-serif;
   font-size: 16px;
   cursor: pointer;
-  padding: 5px 12px;
+  padding: 8px 12px;
   margin: 2px 2px;
   text-align: center;
   text-decoration: none;
@@ -38,6 +38,13 @@ hr {
   box-sizing: border-box;
 }
 
+#play-pause-btn {
+  width: 100px;
+}
+
+#reset-btn {
+  font-size: 18px;
+}
 /* for button elements outside of divs of buttons class */
 button {
   background-color: #d9d9d9;
@@ -67,14 +74,15 @@ button {
 .frame-tools {
   display:flex;
   width: 600px;
-  margin: 0px 0px;
+  margin: 8px 0px;
   justify-content: center;
-  align-items: center
+  align-items: center;
+  gap: 8px;
   /* border: 1px solid black; */
 }
 
 #sketch-fps{
-  width: 250;
+  width: 150;
 }
 
 .fps-slider {
@@ -85,12 +93,12 @@ button {
   margin: 0 0;
   max-width: 600px;
   width: 100%;
-  padding: 5 5px;
+  padding: 0 0px;
   /* border-radius: 25px;
   background: #fff;
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1); */
   /* gap: 10px; */
-  gap: 5px;
+  gap: 2px;
   flex-direction: column;
 }
 
@@ -105,6 +113,11 @@ button {
   box-shadow: 0 0 0 2px #ededed; */
   overflow: hidden;
   cursor: pointer;
+}
+
+.slider-plus-fps {
+  display: flex;
+  gap: 10px
 }
 
 input::-webkit-slider-thumb {
@@ -146,4 +159,7 @@ button:hover {
 .fps-display {
   font-size: 15;
   font-family: 'Inconsolata', sans-serif;
+}
+#fps-display {
+  margin-top: -5px;
 }

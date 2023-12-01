@@ -76,7 +76,7 @@ window.addEventListener('message', async function (event) {
     document.getElementById('reset-btn').addEventListener('click', ()=> {
 
         sketchPlaying = false;
-        document.getElementById('play-pause-btn').textContent = 'Play';
+        document.getElementById('play-pause-btn').textContent = '\u25BA';
 
         setTimeout(()=>{
             p5Setup();
