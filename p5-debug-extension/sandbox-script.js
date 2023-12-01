@@ -135,9 +135,18 @@ window.addEventListener('message', async function (event) {
         
         let trackingVar = document.getElementById('variable-input').value;
 
-        if(!noDrawScript.includes("let " + trackingVar) && !noDrawScript.includes("var " + trackingVar)) {
+        if(trackingVar.replace(/\s/g, "") == "" || (!noDrawScript.includes("let " + trackingVar) && !noDrawScript.includes("var " + trackingVar))) {
+            alert("p5 Debug Error: Variable does not exist");
             return;
         }
+
+        try {
+            eval(trackingVar);
+        } catch (error) {
+            alert("p5 Debug Error: Variable declared locally, does not exist in global sketch");
+            return;
+        }
+
         let varContainer = document.createElement('p');
         varContainer.textContent = `Tracking ${trackingVar}`
         document.body.appendChild(varContainer);
