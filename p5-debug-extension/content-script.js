@@ -1,4 +1,4 @@
-
+var extensionLoaded = false;
 // return highlighting
 
 // document.body.addEventListener('keydown', (e)=> {
@@ -353,11 +353,22 @@ async function sendJsCode(str) {
 }
 
 window.onload = () => {
-    setTimeout(modifyToolbar, 500); // loads new button a bit after window load since p5 apparently has a loading screen
+    setInterval(modifyToolbar, 1000); // loads new button a bit after window load since p5 apparently has a loading screen
 }
 
 function modifyToolbar() {
+
     let toolbar = document.getElementsByClassName('toolbar')[0]; // inserts in existing toolbar
+
+    if(extensionLoaded || !toolbar) {
+        if(!toolbar) {
+            extensionLoaded = false;
+        }
+        return;
+    }
+
+    extensionLoaded = true;
+
     let prefBtn = toolbar.lastChild;
     prefBtn.id = "pref-btn";
     

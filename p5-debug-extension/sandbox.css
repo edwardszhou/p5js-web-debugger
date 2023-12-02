@@ -15,6 +15,7 @@ hr {
   box-sizing: border-box;
   padding: 10px 18px;
   margin: 5 5px;
+  font-family: 'Inconsolata', sans-serif;
 }
 
 .var-tracking {
@@ -162,4 +163,8 @@ button:hover {
 }
 #fps-display {
   margin-top: -5px;
+}
+
+#variable-input {
+  font-family: 'Inconsolata', sans-serif;
 }
