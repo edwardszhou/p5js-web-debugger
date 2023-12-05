@@ -283,7 +283,7 @@ function parseFileCode(fileName) {
         if(!lineContent[1].includes('createCanvas')) { // DOES NOT INCLUDE CREATE CANVAS
             newCode = lineContent[1] + `\n` + newCode;
         } else {
-            newCode = lineContent[1].replace('createCanvas', 'var canvas = createCanvas') + `\ncanvas.parent('canvas-container');p5Setup();} function p5Setup(){\n` + newCode
+            newCode = lineContent[1].replace('createCanvas', 'var p5debug__canvas = createCanvas') + `\np5debug__canvas.parent('canvas-container');p5debug__setup();} function p5debug__setup(){\n` + newCode
         }
         
         keyAction("UP");

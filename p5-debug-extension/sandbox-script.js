@@ -44,67 +44,15 @@ window.addEventListener('message', async function (event) {
         document.getElementById('fps-display').innerText = `FPS: ${fps}`;
     })
 
-    document.getElementById('prev-frame-btn').addEventListener('click', ()=> {
-        if(sketchPlaying) return;
-
-        p5Setup();
-        frameCounter--;
-        frameDisplay.textContent = `Frame Number: ${Math.max(0, frameCounter)}`;
-        for(let i = 0; i < frameCounter; i++) {
-            p5Draw();
-        }
-        displayVariables();
-    })
-    document.getElementById('next-frame-btn').addEventListener('click', ()=> {
-        if(sketchPlaying) return;
-
-        p5Draw();
-        displayVariables();
-        
-        frameCounter++;
-        frameDisplay.textContent = `Frame Number: ${frameCounter}`;
-    })
-    document.getElementById('play-pause-btn').addEventListener('click', ()=> {
-        if(sketchPlaying) {
-            sketchPlaying = false;
-            console.log('no longer playing');
-            document.getElementById('play-pause-btn').textContent = '\u25BA';
-        } else {
-            sketchPlaying = true;
-            console.log('now playing');
-            drawLoop();
-            document.getElementById('play-pause-btn').textContent = '\u23F8'
-        }
-    })
-
-    document.getElementById('reset-btn').addEventListener('click', ()=> {
-
-        sketchPlaying = false;
-        document.getElementById('play-pause-btn').textContent = '\u25BA';
-
-        setTimeout(()=>{
-            p5Setup();
-            frameCounter = 0;
-            frameDisplay.textContent = `Frame Number: ${frameCounter}`;
-        }, Math.floor(1000/fps) + 1);
-        
-    })
-
+    document.getElementById('prev-frame-btn').addEventListener('click', stepBackward);
+    document.getElementById('next-frame-btn').addEventListener('click', stepForward)
+    document.getElementById('play-pause-btn').addEventListener('click', toggleSketchPlay);
+    document.getElementById('reset-btn').addEventListener('click', resetSketch);
     document.getElementById('jump-btn').addEventListener('click', ()=> {
-
         let newFrame = parseInt(document.getElementById('jump-input').value);
-        document.getElementById('jump-input').value = ``;
-        if(isNaN(newFrame)) return;
-
-        frameCounter = newFrame;
-
-        p5Setup();
-        frameDisplay.textContent = `Frame Number: ${frameCounter}`;
-        for(let i = 0; i < frameCounter; i++) {
-            p5Draw();
-            displayVariables();
-        }
+        jumpToFrame(newFrame);
     })
+
     // Nov 25 testing
     // let func_ends = findFuncEnds(newData)
     // console.log("findFuncEnds Function returns: ", func_ends)
@@ -125,46 +73,41 @@ window.addEventListener('message', async function (event) {
 
     let customNoiseSeed = Math.floor(Math.random() * 1000)
     let customRandomSeed = Math.floor(Math.random() * 1000)
-    let noDrawScript = newData.replace(`function draw`, `function p5Draw`).replace(`function p5Setup(){`, `function p5Setup(){noiseSeed(${customNoiseSeed});randomSeed(${customRandomSeed});`);
+    let noDrawScript = newData.replace(`function draw()`, `function p5debug__draw()`).replace(`function p5debug__setup(){`, `function p5debug__setup(){noiseSeed(${customNoiseSeed});randomSeed(${customRandomSeed});`);
 
-
+    console.log(noDrawScript);
     loadSketch(noDrawScript);
 
     let varSubmitBtn = document.getElementById('variable-submit-btn');
     varSubmitBtn.addEventListener('click', ()=> {
-        
+
         let varToTrack = document.getElementById('variable-input').value;
 
-        if(varToTrack.replace(/\s/g, "") == "" || (!noDrawScript.includes("let " + varToTrack) && !noDrawScript.includes("var " + varToTrack))) {
-            alert("p5 Debug Error: Variable does not exist");
-            return;
-        }
-
-        try {
-            eval(varToTrack);
-        } catch (error) {
-            alert("p5 Debug Error: Variable declared locally, does not exist in global sketch");
-            return;
-        }
-
-        for(let variable of trackedVars) {
-            if(variable.name == varToTrack) {
-                alert("p5 Debug Error: Variable is already tracked");
-                return;
-            }
-        }
+        if(!checkVarInput(varToTrack)) return;
 
         let newVarContainer = document.createElement('div');
+        let newVarNameSpan = document.createElement('span');
+        let newVarContentSpan = document.createElement('span');
+
+        newVarContainer.className = "tracked-variable";
+        newVarNameSpan.className = "tracked-var-name";
+        newVarContentSpan.className = "tracked-var-content";
+
         let allVarsContainer = document.getElementsByClassName('variable-container')[0];
 
         let newVarString;
+
         try {
             newVarString = eval(`JSON.stringify(${varToTrack}, null, "--> ")`);
         } catch (error) {
             newVarString = '[UNSUPPORTED TYPE]'
         }
 
-        newVarContainer.innerText = `${varToTrack}: ${newVarString}`
+        newVarNameSpan.innerText = `${varToTrack}: `;
+        newVarContentSpan.innerText = `${newVarString}`;
+        newVarContainer.appendChild(newVarNameSpan);
+        newVarContainer.appendChild(newVarContentSpan);
+
         allVarsContainer.appendChild(newVarContainer);
 
         newVarContainer.addEventListener('click', ()=> {
@@ -181,6 +124,83 @@ window.addEventListener('message', async function (event) {
         document.getElementById('variable-input').value = "";
     })
 
+    function stepForward() {
+        if(sketchPlaying) return;
+
+        p5Draw();
+        displayVariables();
+        
+        frameCounter++;
+        frameDisplay.textContent = `Frame Number: ${frameCounter}`;
+    }
+    function stepBackward() {
+        if(sketchPlaying) return;
+
+        p5Setup();
+        frameCounter--;
+        frameDisplay.textContent = `Frame Number: ${Math.max(0, frameCounter)}`;
+        for(let i = 0; i < frameCounter; i++) {
+            p5Draw();
+        }
+        displayVariables();
+    }
+    function toggleSketchPlay() {
+        if(sketchPlaying) {
+            sketchPlaying = false;
+            console.log('no longer playing');
+            document.getElementById('play-pause-btn').textContent = '\u25BA';
+        } else {
+            sketchPlaying = true;
+            console.log('now playing');
+            drawLoop();
+            document.getElementById('play-pause-btn').textContent = '\u23F8'
+        }
+    }
+    function resetSketch() {
+        sketchPlaying = false;
+        document.getElementById('play-pause-btn').textContent = '\u25BA';
+
+        setTimeout(()=>{
+            p5Setup();
+            frameCounter = 0;
+            frameDisplay.textContent = `Frame Number: ${frameCounter}`;
+        }, Math.floor(1000/fps) + 1);
+    }
+    function jumpToFrame(newFrame) {
+        document.getElementById('jump-input').value = ``;
+        if(isNaN(newFrame)) return;
+
+        frameCounter = newFrame;
+
+        p5Setup();
+        frameDisplay.textContent = `Frame Number: ${frameCounter}`;
+        for(let i = 0; i < frameCounter; i++) {
+            p5Draw();
+            displayVariables();
+        }
+    }
+    function checkVarInput(varToTrack) {
+        if(varToTrack.replace(/\s/g, "") == "" || (!noDrawScript.includes("let " + varToTrack) && !noDrawScript.includes("var " + varToTrack))) {
+            alert("p5 Debug Error: Variable does not exist");
+            return false;
+        }
+
+        try {
+            eval(varToTrack);
+        } catch (error) {
+            alert("p5 Debug Error: Variable declared locally, does not exist in global sketch");
+            return false;
+        }
+
+        for(let variable of trackedVars) {
+            if(variable.name == varToTrack) {
+                alert("p5 Debug Error: Variable is already tracked");
+                return false;
+            }
+        }
+
+        return true;
+    }
 });
 
 //generate a list holding each line of the code in newData
@@ -240,10 +260,6 @@ function findFuncEnds(data) {
     }
     return {drawLoopEnd: drawLoopEnd, setupEnd: setupEnd, sketchEnd: sketchEnd};
     }
-
-function isLineNumber(str) {
-    return !isNaN(parseInt(str));
-}
 
 function insertHere(str, codeLines, location){
     // location: str that represents location to insert (i.e 'drawLoopEnd', 'sketchEnd', 'setupEnd',)
