@@ -6,39 +6,50 @@
     <body>
     </body>
     <script src="sandbox-script.js"></script>
-    <div class="fps-display">
-        <hr>
-            <div class="fps-slider">
-                <!-- <p>Choose FPS</p> -->
-                <div class="slider-plus-fps">
-                    <input class="slider-design" type="range" min="1" max="60" value="5" id="sketch-fps">
-                    <span id="fps-display">fps: 5</span>
-                </div>
-                <span id="frame-display">Frame Number: 0</span>
+    <hr>
+    <div class="info-display">
+    
+        <div class="fps-slider">
+            <!-- <p>Choose FPS</p> -->
+            <div class="slider-plus-fps">
+                <input class="slider-design" type="range" min="1" max="60" value="5" id="sketch-fps">
+                <span id="fps-display">fps: 5</span>
             </div>
-            <hr>
-            <div class="var-tracker">
-                <input type="text" id="variable-input" placeholder="Variable Name">
-                <button id="variable-submit-btn" class="buttons">Track</button> 
+            <span id="frame-display">Frame Number: 0</span>
+        </div>
+
+        <div class="var-tracker">
+            <input type="text" id="variable-input" placeholder="Variable Name">
+            <button id="variable-submit-btn" class="buttons">Track</button> 
+        </div>
+        <!-- <span id="fps-display">FPS: 5</span><br> -->
+    </div>
+    <hr>
+    <div class="main-container">
+        <div class="content-container">
+            <div id="canvas-container"></div>
+            <div class="variable-container">
+                <div class="tracked-variable">Tracking: [Sample]</div>
             </div>
-            <!-- <span id="fps-display">FPS: 5</span><br> -->
-        <hr>
-    </div>
-    <div class="flexbox-container" id="canvas-container"></div>
-    <div class="flexbox-container">
-        <div class="frame-tools buttons">
-            <button id="prev-frame-btn"> << </button>
-            <button id="next-frame-btn"> >> </button>
-            <button id="play-pause-btn"> &#9658 </button>
-            <button id="reset-btn"> &#8634 </button>
-            
-            <br><br>
         </div>
-        <div class="frame-tools jump-to">
-            <input type="text" placeholder="Jump to frame" id="jump-input">
-            <button id="jump-btn">Jump</button>
+        <div class="flexbox-container" id="canvas-controls">
+            <div class="frame-tools buttons">
+                <button id="prev-frame-btn"> << </button>
+                <button id="next-frame-btn"> >> </button>
+                <button id="play-pause-btn"> &#9658 </button>
+                <button id="reset-btn"> &#8634 </button>
+                
+                <br><br>
+            </div>
+            <div class="frame-tools jump-to">
+                <input type="text" placeholder="Jump to frame" id="jump-input">
+                <button id="jump-btn">Jump</button>
+            </div>
         </div>
+
+
     </div>
+    
 
     
 </html>
