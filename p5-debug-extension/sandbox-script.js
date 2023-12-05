@@ -133,24 +133,52 @@ window.addEventListener('message', async function (event) {
     let varSubmitBtn = document.getElementById('variable-submit-btn');
     varSubmitBtn.addEventListener('click', ()=> {
         
-        let trackingVar = document.getElementById('variable-input').value;
+        let varToTrack = document.getElementById('variable-input').value;
 
-        if(trackingVar.replace(/\s/g, "") == "" || (!noDrawScript.includes("let " + trackingVar) && !noDrawScript.includes("var " + trackingVar))) {
+        if(varToTrack.replace(/\s/g, "") == "" || (!noDrawScript.includes("let " + varToTrack) && !noDrawScript.includes("var " + varToTrack))) {
             alert("p5 Debug Error: Variable does not exist");
             return;
         }
 
         try {
-            eval(trackingVar);
+            eval(varToTrack);
         } catch (error) {
             alert("p5 Debug Error: Variable declared locally, does not exist in global sketch");
             return;
         }
 
-        let varContainer = document.createElement('p');
-        varContainer.textContent = `Tracking ${trackingVar}`
-        document.body.appendChild(varContainer);
-        trackedVars.push({name: trackingVar, container: varContainer});
+        for(let variable of trackedVars) {
+            if(variable.name == varToTrack) {
+                alert("p5 Debug Error: Variable is already tracked");
+                return;
+            }
+        }
+
+        let newVarContainer = document.createElement('div');
+        let allVarsContainer = document.getElementsByClassName('variable-container')[0];
+
+        let newVarString;
+        try {
+            newVarString = eval(`JSON.stringify(${varToTrack}, null, "--> ")`);
+        } catch (error) {
+            newVarString = '[UNSUPPORTED TYPE]'
+        }
+
+        newVarContainer.innerText = `${varToTrack}: ${newVarString}`
+        allVarsContainer.appendChild(newVarContainer);
+
+        newVarContainer.addEventListener('click', ()=> {
+            allVarsContainer.removeChild(newVarContainer);
+            for(let i = 0; i < trackedVars.length; i++) {
+                let variable = trackedVars[i]
+                if(variable.container == newVarContainer) {
+                    trackedVars.splice(i, 1);
+                }
+            }
+        })
+        trackedVars.push({name: varToTrack, container: newVarContainer});
+
+        document.getElementById('variable-input').value = "";
     })
 
 });
@@ -265,6 +293,13 @@ function loadSketch(script) {
 
 function displayVariables() {
     for(let variable of trackedVars) {
-        variable.container.textContent = `${variable.name}: ${eval(variable.name)}`
+
+        let varString;
+        try {
+            varString = eval(`JSON.stringify(${variable.name}, null, "----")`);
+        } catch (error) {
+            varString = '[UNSUPPORTED TYPE]'
+        }
+        variable.container.innerText = `${variable.name}: ${varString}`
     }
 }
