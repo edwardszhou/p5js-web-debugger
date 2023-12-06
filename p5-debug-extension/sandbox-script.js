@@ -20,13 +20,14 @@ let trackedVars = [];
 window.addEventListener('message', async function (event) {
 
     let newData = `${event.data.trim().replace(/[\u200B-\u200D\uFEFF]/g, '')}`
+    newData = transform_code(newData.split('\n'), key_pattern, global_pattern).join('\n');
 
     let frameCounter = 0
     let fps = 5
     let sketchPlaying = false;
 
     let drawLoop = function () {
-        p5Draw();
+        P5DEBUG__draw();
         displayVariables();
         frameCounter++;
         frameDisplay.textContent = `Frame Number: ${frameCounter}`;
@@ -73,7 +74,7 @@ window.addEventListener('message', async function (event) {
 
     let customNoiseSeed = Math.floor(Math.random() * 1000)
     let customRandomSeed = Math.floor(Math.random() * 1000)
-    let noDrawScript = newData.replace(`function draw()`, `function p5debug__draw()`).replace(`function p5debug__setup(){`, `function p5debug__setup(){noiseSeed(${customNoiseSeed});randomSeed(${customRandomSeed});`);
+    let noDrawScript = newData.replace(`function P5DEBUG__setup(){`, `function P5DEBUG__setup(){noiseSeed(${customNoiseSeed});randomSeed(${customRandomSeed});`);
 
     console.log(noDrawScript);
     loadSketch(noDrawScript);
@@ -127,7 +128,7 @@ window.addEventListener('message', async function (event) {
     function stepForward() {
         if(sketchPlaying) return;
 
-        p5Draw();
+        P5DEBUG__draw();
         displayVariables();
         
         frameCounter++;
@@ -136,11 +137,11 @@ window.addEventListener('message', async function (event) {
     function stepBackward() {
         if(sketchPlaying) return;
 
-        p5Setup();
+        P5DEBUG__setup();
         frameCounter--;
         frameDisplay.textContent = `Frame Number: ${Math.max(0, frameCounter)}`;
         for(let i = 0; i < frameCounter; i++) {
-            p5Draw();
+            P5DEBUG__draw();
         }
         displayVariables();
     }
@@ -161,7 +162,7 @@ window.addEventListener('message', async function (event) {
         document.getElementById('play-pause-btn').textContent = '\u25BA';
 
         setTimeout(()=>{
-            p5Setup();
+            P5DEBUG__setup();
             frameCounter = 0;
             frameDisplay.textContent = `Frame Number: ${frameCounter}`;
         }, Math.floor(1000/fps) + 1);
@@ -172,10 +173,10 @@ window.addEventListener('message', async function (event) {
 
         frameCounter = newFrame;
 
-        p5Setup();
+        P5DEBUG__setup();
         frameDisplay.textContent = `Frame Number: ${frameCounter}`;
         for(let i = 0; i < frameCounter; i++) {
-            p5Draw();
+            P5DEBUG__draw();
             displayVariables();
         }
     }

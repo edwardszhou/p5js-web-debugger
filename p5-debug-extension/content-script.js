@@ -279,12 +279,8 @@ function parseFileCode(fileName) {
     while(lastLineNum != 1) {
         let lineContent = document.getElementsByClassName('CodeMirror-activeline')[0].innerText.split('\n')
         lastLineNum = parseInt(lineContent[0])
-        
-        if(!lineContent[1].includes('createCanvas')) { // DOES NOT INCLUDE CREATE CANVAS
-            newCode = lineContent[1] + `\n` + newCode;
-        } else {
-            newCode = lineContent[1].replace('createCanvas', 'var p5debug__canvas = createCanvas') + `\np5debug__canvas.parent('canvas-container');p5debug__setup();} function p5debug__setup(){\n` + newCode
-        }
+
+        newCode = lineContent[1] + `\n` + newCode;
         
         keyAction("UP");
         keyAction("HOME");
