@@ -328,19 +328,21 @@ function getAllJsFiles() {
 
 function getJsCode(jsFiles) {
 
-    let jsCode = ``
+    let jsCode = ``;
+    let links = [];
 
     for(let jsFile of jsFiles) {
         if(jsFile.includes("https://")){
             // console.log("Not searched: " + jsFile)
-            continue;
-        } 
-        jsCode += parseFileCode(jsFile);
+            links.push(jsFile);
+        } else {
+            jsCode += parseFileCode(jsFile);
+        }
     }
 
     // console.log(jsCode)
 
-    return jsCode;
+    return {code: jsCode, links: links};
 
 }
 

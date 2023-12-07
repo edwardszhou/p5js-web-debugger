@@ -20,7 +20,10 @@ var P5DEBUG__canvas;
 
 window.addEventListener('message', async function (event) {
 
-    let newData = `${event.data.trim().replace(/[\u200B-\u200D\uFEFF]/g, '')}`
+    let code = event.data.code;
+    let links = event.data.links;
+
+    let newData = `${code.trim().replace(/[\u200B-\u200D\uFEFF]/g, '')}`
     newData = transform_code(newData.split('\n'), key_pattern, global_pattern).join('\n');
 
     let frameCounter = 0
@@ -75,10 +78,10 @@ window.addEventListener('message', async function (event) {
 
     let customNoiseSeed = Math.floor(Math.random() * 1000)
     let customRandomSeed = Math.floor(Math.random() * 1000)
-    let noDrawScript = newData.replace(`function P5DEBUG__setup(){`, `function P5DEBUG__setup(){noiseSeed(${customNoiseSeed});randomSeed(${customRandomSeed});`);
+    let noDrawScript = newData.replace(`P5DEBUG__NOISESEED`, `${customNoiseSeed}`).replace(`P5DEBUG__RANDOMSEED`, `${customRandomSeed}`);
 
     console.log(noDrawScript);
-    loadSketch(noDrawScript);
+    loadSketch([noDrawScript, links]);
 
     let varSubmitBtn = document.getElementById('variable-submit-btn');
     varSubmitBtn.addEventListener('click', ()=> {
@@ -167,6 +170,7 @@ window.addEventListener('message', async function (event) {
             P5DEBUG__canvas.clear();
             frameCounter = 0;
             frameDisplay.textContent = `Frame Number: ${frameCounter}`;
+            displayVariables();
         }, Math.floor(1000/fps) + 1);
     }
     function jumpToFrame(newFrame) {
@@ -290,21 +294,32 @@ function insertDrawStart(str, codeLines) {
     return codeLines.join("\n")
 }
 
-function loadSketch(script) {
+function loadSketch(scripts) {
     if(document.getElementById('p5')) {
-        document.body.remove(document.getElementById('p5'));
-        document.body.remove(document.getElementById('sketch'));
+        for(let file of document.getElementsByClassName('p5-debug-js-file')) {
+            document.body.remove(file);
+        }
     }
 
     var newScript = document.createElement("script");
-    newScript.text = script;
+    newScript.text = scripts[0];
     newScript.async = false;
     newScript.id = 'sketch';
+    newScript.classList += 'p5-debug-js-file';
 
     var newScript2 = document.createElement("script");
     newScript2.src = 'p5.min.js';
     newScript2.async = false;
     newScript2.id = 'p5';
+    newScript2.classList += 'p5-debug-js-file';
+
+    // for(let link of scripts[1]) {
+    //     let linkScript = document.createElement("script");
+    //     linkScript.src = link;
+    //     linkScript.async = false;
+    //     linkScript.classList += 'p5-debug-js-file';
+    //     document.body.appendChild(linkScript);
+    // }
 
     document.body.appendChild(newScript);
     document.body.appendChild(newScript2);
@@ -315,7 +330,7 @@ function displayVariables() {
 
         let varString;
         try {
-            varString = eval(`JSON.stringify(${variable.name}, null, "----")`);
+            varString = eval(`JSON.stringify(${variable.name}, null, "--> ")`);
         } catch (error) {
             varString = '[UNSUPPORTED TYPE]'
         }

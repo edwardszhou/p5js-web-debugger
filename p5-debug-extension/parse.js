@@ -62,6 +62,7 @@ function transform_code(lines, key_pattern, global_pattern) {
                 setup_braces.push('{');
             setup.push(code_line);
             p5_setup.push(new_code);
+            p5_setup.push('noiseSeed(P5DEBUG__NOISESEED);randomSeed(P5DEBUG__RANDOMSEED);');
             continue;
         }
 
