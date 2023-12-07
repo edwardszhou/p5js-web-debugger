@@ -88,21 +88,29 @@ button {
 }
 
 #canvas-container {
-  display: flex;
+  /* display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  width: 70%;
-  height: 100%;
+  justify-content: center; */
+  background-color: white;
+  border: #333333 1px solid;
+  margin: 3%;
+  width: 64%;
+  height: 94%;
   overflow: auto;
 
+}
+#canvas-container > * {
+  all: revert;
 }
 
 .variable-container {
   display: flex;
   flex-direction: column;
-  width: 30%;
-  height: 100%;
+  border: #333333 1px solid;
+  margin: 3% 3% 3% 0;
+  width: 27%;
+  height: 94%;
   background-color: red;
 }
 
@@ -177,6 +185,10 @@ input::-webkit-slider-thumb:hover {
   /* border: 2px solid #fff; */
   background-color: #ed225d;
   box-shadow: -208px 0 0 200px #ed225d;
+}
+
+#canvas-container input::-webkit-slider-thumb, #canvas-container input::-webkit-slider-thumb:hover {
+  all: unset;
 }
 
 .buttons button:hover {

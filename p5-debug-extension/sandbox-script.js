@@ -16,6 +16,7 @@ FLAWS + TODO:
 
 */
 let trackedVars = [];
+var P5DEBUG__canvas;
 
 window.addEventListener('message', async function (event) {
 
@@ -163,6 +164,7 @@ window.addEventListener('message', async function (event) {
 
         setTimeout(()=>{
             P5DEBUG__setup();
+            P5DEBUG__canvas.clear();
             frameCounter = 0;
             frameDisplay.textContent = `Frame Number: ${frameCounter}`;
         }, Math.floor(1000/fps) + 1);

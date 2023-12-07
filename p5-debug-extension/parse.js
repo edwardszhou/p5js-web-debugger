@@ -15,6 +15,11 @@ function handle_global_line(line) {
     let global_declarations = [];
 
     for (let i = 0; i < inits.length; i++) {
+        if(!inits[i].includes('=')) {
+            global_declarations.push(inits[i]);
+            continue;
+        }
+
         let components = inits[i].split(" ");
         if (components[0] === 'const') {
             let init = inits[i] + ";";
@@ -81,13 +86,17 @@ function transform_code(lines, key_pattern, global_pattern) {
                         break;
                     }
                 }
-
                 if(a.includes('createCanvas')) {
-                    setup.push(`\tvar P5DEBUG__canvas = ${a}\n`);
+                    setup.push(`\P5DEBUG__canvas = ${a}\n`);
                     setup.push(`\tP5DEBUG__canvas.parent('canvas-container');\n`)
-                } else {
+                } else if(code_line.trim().search(key_pattern) == 0) {
                     let b = generate_random_string(10);
                     setup.push(`\tvar ${b} = ${a}\n`);
+                    setup.push(`\t${b}.parent('canvas-container');\n`)
+                } else {
+                    let elementDeclare = code_line.split('=')[0].trim();
+                    let b = elementDeclare.replace('var', '').replace('let', '').trim();
+                    setup.push(code_line);
                     setup.push(`\t${b}.parent('canvas-container');\n`)
                 }
             } else {
