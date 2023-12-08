@@ -36,28 +36,9 @@ var extensionLoaded = false;
 // communication with popup
 
 chrome.runtime.onMessage.addListener( function(req, sender, sendResponse) {
-    console.log('received')
-    if(req.varName) {
-        // highlightVars(req.varName);
-        // insertSetupEnd("frameRate(0.5)");
-        // insertDrawEnd("console.log(\'DEBUGTRACK: Loop #\' + frameCount + \': " + req.varName + " = \' + " + req.varName + ")");
-        // // this allows for pressing spacebar to pause/play each frame!
-        // insertLoopControl("function keyPressed() {if (keyCode === 32) {loop();setTimeout(noLoop(), 100)}}")
-        // clickPlay();
-        // clickCanvas();
-
-        // var consoleObserver = new MutationObserver(observeConsole);
-        // consoleObserver.observe(document.getElementsByClassName('preview-console__messages')[0].firstChild, {childList: true});
-        // sendResponse({highlighted:true});
-    } else if (req.type == 'runSketch'){
-        // console.log('message 1 received')
-        // console.log(getAllJsFiles());
-        // let code = getJsCode(['sketch.js']);
-        // chrome.runtime.sendMessage({jsCode: code});
-        // console.log('message 2 received')
-        sendJsCode(parseFileCode('sketch.js'));
-        // sendResponse({string: code });
-        
+    console.log('Initializing p5');
+    if (req.type == 'initiate'){
+        modifyToolbar();
     }
 
 });
@@ -85,168 +66,6 @@ function keyAction(action) {
     }
     else if(action == "PGUP") {
         codeMirrorContainer.dispatchEvent(new KeyboardEvent('keydown', {'bubbles': true, 'code': 'ArrowUp', 'key': 'ArrowUp', 'keyCode':38, 'ctrlKey': true}));
-    }
-}
-
-function insertCode(str) {
-    let codeMirrorContainer = document.getElementsByClassName('CodeMirror-code')[0]
-    for(let char of str) {
-        codeMirrorContainer.dispatchEvent(new KeyboardEvent('keypress',{'key': char, 'bubbles': true, 'charCode':char.charCodeAt(0)}));
-    }
-}
-
-// NEEDS FIXING (SIMILAR TO parseEditorCode) TO READ ALL CODE
-function findFuncEnds() {
-    let codeMirrorContainer = document.getElementsByClassName('CodeMirror-code')[0];
-    let codeArr = codeMirrorContainer.innerText.split('\n');
-
-    const drawLine = "function draw() {"
-    const setupLine = "function setup() {"
-    let maxLineNumber = 0;
-    let drawLoopEnd;
-    let setupEnd;
-    let sketchEnd;
-    let drawBracketCount = -1;
-    let setupBracketCount = -1;
-
-
-    for(let line of codeArr) {
-        if(isLineNumber(line)) {
-            maxLineNumber = parseInt(line);
-            console.log("LINE NUMBER: " + maxLineNumber);
-        } else if (line.replace(/\s/g, "") === drawLine.replaceAll(/\s/g,"")) {
-            drawBracketCount = 0;
-            console.log("THIS IS FUNCTION DRAW RIGHT HERE: " + line);
-        }
-        else if(line.replace(/\s/g, "") === setupLine.replaceAll(/\s/g,"")){
-            setupBracketCount = 0;
-            console.log(setupBracketCount + " brackets");
-            console.log("This is a line: " + line);
-        }
-
-        if(drawBracketCount != -1) {
-            for(let char of line) {
-                if(char === "{") drawBracketCount++;
-                else if(char === "}") {
-                    if(--drawBracketCount == 0) {
-                        console.log("----END OF DRAW LOOP RIGHT HERE: Line " + maxLineNumber);
-                        drawBracketCount = -1;
-                        drawLoopEnd = maxLineNumber;
-                        sketchEnd = maxLineNumber + 1;
-                    }
-                }
-            }
-        }
-        if(setupBracketCount != -1) {
-            for(let char of line) {
-                if(char === "{") setupBracketCount++;
-                else if(char === "}") {
-                    if(--setupBracketCount == 0) {
-                        console.log("----END OF SETUP LOOP RIGHT HERE: Line " + maxLineNumber);
-                        setupBracketCount = -1;
-                        setupEnd = maxLineNumber;
-                    }
-                }
-            }
-        }
-    }
-    return {maxLineNumber: maxLineNumber, drawLoopEnd: drawLoopEnd, setupEnd: setupEnd, sketchEnd: sketchEnd};
-}
-
-function isLineNumber(str) {
-    return !isNaN(parseInt(str));
-}
-
-function insertDrawEnd(str) {
-    console.log('inserting ' + str);
-    let lineInfo = findFuncEnds();
-    
-
-    keyAction("PGDOWN");
-    keyAction("HOME");
-    for(let i = 0; i < lineInfo.maxLineNumber - lineInfo.drawLoopEnd; i++) {
-        keyAction("UP");
-        keyAction("HOME");
-    }
-    keyAction("NEWLINE");
-
-    insertCode(str);
-    keyAction("NEWLINE");
-}
-
-function insertSetupEnd(str) {
-    console.log('inserting ' + str);
-    let lineInfo = findFuncEnds();
-    
-
-    keyAction("PGDOWN");
-    keyAction("HOME");
-    for(let i = 0; i < lineInfo.maxLineNumber - lineInfo.setupEnd; i++) {
-        keyAction("UP");
-        keyAction("HOME");
-    }
-    keyAction("NEWLINE");
-
-    insertCode(str);
-    keyAction("NEWLINE");
-}
-
-function insertLoopControl(str) {
-    console.log('inserting ' + str);
-    let codeMirrorContainer = document.getElementsByClassName('CodeMirror-code')[0]
-    let lineInfo = findEndOfDraw(codeMirrorContainer.innerText);
-    
-    // if we still make it find the spot right under drawLoopEnd, then we can easily have it delete everything older/repeated under?
-    keyAction("PGDOWN");
-    keyAction("HOME");
-    for(let i = 0; i < lineInfo.maxLineNumber - lineInfo.sketchEnd; i++) {
-        keyAction("UP");
-        keyAction("HOME");
-    }
-    keyAction("NEWLINE");
-
-    insertCode(str);
-    keyAction("NEWLINE");
-
-}
-
-function clickPlay() {
-    let playBtn = document.getElementsByClassName("toolbar__play-button")[0]
-    playBtn.dispatchEvent(new MouseEvent("click", {
-        view: window,
-        bubbles: true,
-        cancelable: true,
-    }));
-}
-
-// console reading
-function clickCanvas() {
-    let canvasContainer = document.getElementsByClassName("preview-frame__content")[0]
-    canvasContainer.dispatchEvent(new MouseEvent("click", {
-        view: window,
-        bubbles: true,
-        cancelable: true,
-    }));
-    console.log("canvas clicked!")
-}
-
-function readLastConsoleMessage() {
-    let consoleContainer = document.getElementsByClassName('preview-console__messages')[0];
-    if(consoleContainer.firstChild.lastChild) {
-        return consoleContainer.firstChild.lastChild.innerText;
-    }
-}
-
-var observeConsole = function(mutationsList) {
-    for(let mutation of mutationsList) {
-        if (mutation.type == 'childList') {
-            console.log("change detected");
-            let message = readLastConsoleMessage();
-            (async () => {
-                const response = await chrome.runtime.sendMessage({message: message});
-                console.log(response);
-              })();
-        }
     }
 }
 
@@ -441,4 +260,180 @@ function modifyToolbar() {
             document.getElementsByClassName('editor-preview-container')[0].parentElement.removeChild(overlay);
         });
     })
+}
+
+/*
+
+METHODS BELOW ARE NOT IN USE NOR IN DEVELOPMENT AS OF 12/8/23
+
+*/
+
+// DEPRECATED
+function insertCode(str) {
+    let codeMirrorContainer = document.getElementsByClassName('CodeMirror-code')[0]
+    for(let char of str) {
+        codeMirrorContainer.dispatchEvent(new KeyboardEvent('keypress',{'key': char, 'bubbles': true, 'charCode':char.charCodeAt(0)}));
+    }
+}
+
+// DEPRECATED
+function findFuncEnds() {
+    let codeMirrorContainer = document.getElementsByClassName('CodeMirror-code')[0];
+    let codeArr = codeMirrorContainer.innerText.split('\n');
+
+    const drawLine = "function draw() {"
+    const setupLine = "function setup() {"
+    let maxLineNumber = 0;
+    let drawLoopEnd;
+    let setupEnd;
+    let sketchEnd;
+    let drawBracketCount = -1;
+    let setupBracketCount = -1;
+
+
+    for(let line of codeArr) {
+        if(isLineNumber(line)) {
+            maxLineNumber = parseInt(line);
+            console.log("LINE NUMBER: " + maxLineNumber);
+        } else if (line.replace(/\s/g, "") === drawLine.replaceAll(/\s/g,"")) {
+            drawBracketCount = 0;
+            console.log("THIS IS FUNCTION DRAW RIGHT HERE: " + line);
+        }
+        else if(line.replace(/\s/g, "") === setupLine.replaceAll(/\s/g,"")){
+            setupBracketCount = 0;
+            console.log(setupBracketCount + " brackets");
+            console.log("This is a line: " + line);
+        }
+
+        if(drawBracketCount != -1) {
+            for(let char of line) {
+                if(char === "{") drawBracketCount++;
+                else if(char === "}") {
+                    if(--drawBracketCount == 0) {
+                        console.log("----END OF DRAW LOOP RIGHT HERE: Line " + maxLineNumber);
+                        drawBracketCount = -1;
+                        drawLoopEnd = maxLineNumber;
+                        sketchEnd = maxLineNumber + 1;
+                    }
+                }
+            }
+        }
+        if(setupBracketCount != -1) {
+            for(let char of line) {
+                if(char === "{") setupBracketCount++;
+                else if(char === "}") {
+                    if(--setupBracketCount == 0) {
+                        console.log("----END OF SETUP LOOP RIGHT HERE: Line " + maxLineNumber);
+                        setupBracketCount = -1;
+                        setupEnd = maxLineNumber;
+                    }
+                }
+            }
+        }
+    }
+    return {maxLineNumber: maxLineNumber, drawLoopEnd: drawLoopEnd, setupEnd: setupEnd, sketchEnd: sketchEnd};
+}
+
+// DEPRECATED
+function isLineNumber(str) {
+    return !isNaN(parseInt(str));
+}
+
+// DEPRECATED
+function insertDrawEnd(str) {
+    console.log('inserting ' + str);
+    let lineInfo = findFuncEnds();
+    
+
+    keyAction("PGDOWN");
+    keyAction("HOME");
+    for(let i = 0; i < lineInfo.maxLineNumber - lineInfo.drawLoopEnd; i++) {
+        keyAction("UP");
+        keyAction("HOME");
+    }
+    keyAction("NEWLINE");
+
+    insertCode(str);
+    keyAction("NEWLINE");
+}
+
+// DEPRECATED
+function insertSetupEnd(str) {
+    console.log('inserting ' + str);
+    let lineInfo = findFuncEnds();
+    
+
+    keyAction("PGDOWN");
+    keyAction("HOME");
+    for(let i = 0; i < lineInfo.maxLineNumber - lineInfo.setupEnd; i++) {
+        keyAction("UP");
+        keyAction("HOME");
+    }
+    keyAction("NEWLINE");
+
+    insertCode(str);
+    keyAction("NEWLINE");
+}
+
+// DEPRECATED
+function insertLoopControl(str) {
+    console.log('inserting ' + str);
+    let codeMirrorContainer = document.getElementsByClassName('CodeMirror-code')[0]
+    let lineInfo = findEndOfDraw(codeMirrorContainer.innerText);
+    
+    // if we still make it find the spot right under drawLoopEnd, then we can easily have it delete everything older/repeated under?
+    keyAction("PGDOWN");
+    keyAction("HOME");
+    for(let i = 0; i < lineInfo.maxLineNumber - lineInfo.sketchEnd; i++) {
+        keyAction("UP");
+        keyAction("HOME");
+    }
+    keyAction("NEWLINE");
+
+    insertCode(str);
+    keyAction("NEWLINE");
+
+}
+
+// DEPRECATED
+function clickPlay() {
+    let playBtn = document.getElementsByClassName("toolbar__play-button")[0]
+    playBtn.dispatchEvent(new MouseEvent("click", {
+        view: window,
+        bubbles: true,
+        cancelable: true,
+    }));
+}
+
+// DEPRECATED
+function clickCanvas() {
+    let canvasContainer = document.getElementsByClassName("preview-frame__content")[0]
+    canvasContainer.dispatchEvent(new MouseEvent("click", {
+        view: window,
+        bubbles: true,
+        cancelable: true,
+    }));
+    console.log("canvas clicked!")
+}
+
+// DEPRECATED
+function readLastConsoleMessage() {
+    let consoleContainer = document.getElementsByClassName('preview-console__messages')[0];
+    if(consoleContainer.firstChild.lastChild) {
+        return consoleContainer.firstChild.lastChild.innerText;
+    }
+}
+
+// DEPRECATED
+var observeConsole = function(mutationsList) {
+    for(let mutation of mutationsList) {
+        if (mutation.type == 'childList') {
+            console.log("change detected");
+            let message = readLastConsoleMessage();
+            (async () => {
+                const response = await chrome.runtime.sendMessage({message: message});
+                console.log(response);
+              })();
+        }
+    }
 }

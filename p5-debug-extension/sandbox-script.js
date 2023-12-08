@@ -1,20 +1,13 @@
 /*
 
-WORKING: Step forward, step back, play/pause, jump to frame, reset sketch
-
-FLAWS + TODO:
-->  in content-script.js, separates p5Setup (actual setup function) when createCanvas is called. 
-    Should ideally ONLY have createCanvas in setup and call everything else in p5Setup.
-->  cannot read from multiple .js files or any packages delivered via cdn, accessing other files via click event dispatch works but also force closes extension
-    (see content-script.js - parseFileCode, getAllJsFiles, getJsCode)
-    Should ideally have everything run as iframe in the webpage itself and do away with the extension's popup itself
-        -> how to deal with video/image files?
-->  Stepping back is currently very slow/inefficient with bigger projects, not sure how to optimize without insane memory usage
-->  implement variable tracking (create new HTML element every time a variable is declared in code?)
+TODO:
+->  how to deal with CDNs, videos, images?
+->  user interaction
 ->  integrate Eunice's openai stuff
-->  make everything look pretty
+->  line by line step
 
 */
+
 let trackedVars = [];
 var P5DEBUG__canvas;
 
@@ -56,24 +49,6 @@ window.addEventListener('message', async function (event) {
         let newFrame = parseInt(document.getElementById('jump-input').value);
         jumpToFrame(newFrame);
     })
-
-    // Nov 25 testing
-    // let func_ends = findFuncEnds(newData)
-    // console.log("findFuncEnds Function returns: ", func_ends)
-
-    //testing adding function to end of sketch
-    // let codeLines = codeList(newData)
-    // newData = insertHere("  console.log('here is new function placeholder lalala');", codeLines, 'drawLoopEnd')
-    // console.log(newData)
-
-
-    
-    // // ----- start ----- these lines allow injecting to the start of the draw loop
-    // console.log(newData);
-    // let codeLines = codeList(newData)
-    // newData = insertDrawStart("  console.log(x);", codeLines)
-    // console.log(newData)
-    // // ----- end -----
 
     let customNoiseSeed = Math.floor(Math.random() * 1000)
     let customRandomSeed = Math.floor(Math.random() * 1000)
@@ -211,12 +186,69 @@ window.addEventListener('message', async function (event) {
     }
 });
 
+function loadSketch(scripts) {
+    if(document.getElementById('p5')) {
+        for(let file of document.getElementsByClassName('p5-debug-js-file')) {
+            document.body.remove(file);
+        }
+    }
+
+    var newScript = document.createElement("script");
+    newScript.text = scripts[0];
+    newScript.async = false;
+    newScript.id = 'sketch';
+    newScript.classList += 'p5-debug-js-file';
+
+    var newScript2 = document.createElement("script");
+    newScript2.src = 'p5.min.js';
+    newScript2.async = false;
+    newScript2.id = 'p5';
+    newScript2.classList += 'p5-debug-js-file';
+
+    // for(let link of scripts[1]) {
+    //     let linkScript = document.createElement("script");
+    //     linkScript.src = link;
+    //     linkScript.async = false;
+    //     linkScript.classList += 'p5-debug-js-file';
+    //     document.body.appendChild(linkScript);
+    // }
+
+    document.body.appendChild(newScript);
+    document.body.appendChild(newScript2);
+}
+
+function displayVariables() {
+    for(let variable of trackedVars) {
+
+        let varString, err = false;
+        try {
+            varString = eval(`JSON.stringify(${variable.name}, null, "--> ")`);
+        } catch (error) {
+            varString = '[UNSUPPORTED TYPE]'
+            err = true;
+        }
+        variable.container.firstChild.innerText = `${variable.name}: `;
+        variable.container.firstChild.nextSibling.innerText = `${varString}`;
+
+        if(err) {
+            variable.container.style.backgroundColor = 'rgb(255, 225, 225)';
+            variable.container.style.color = 'rgb(209, 21, 24)';
+        }
+    }
+}
+
+/*
+
+METHODS BELOW ARE NOT IN USE AS OF 12/8/23
+
+*/
 //generate a list holding each line of the code in newData
 function codeList(data) {
     let codeLines = data.split("\n") //split based on "\n"
     return codeLines
 }
 
+// needs fixing
 function findFuncEnds(data) {
     let codeArr = data
 
@@ -278,6 +310,7 @@ function insertHere(str, codeLines, location){
     return codeLines.join("\n")
 }
 
+// needs fixing
 function findDrawStart(codeLines) {
     const setupLine = "function draw()"
 
@@ -293,55 +326,4 @@ function insertDrawStart(str, codeLines) {
     let insertIndex = findDrawStart(codeLines);
     codeLines.splice(insertIndex, 0, str)
     return codeLines.join("\n")
-}
-
-function loadSketch(scripts) {
-    if(document.getElementById('p5')) {
-        for(let file of document.getElementsByClassName('p5-debug-js-file')) {
-            document.body.remove(file);
-        }
-    }
-
-    var newScript = document.createElement("script");
-    newScript.text = scripts[0];
-    newScript.async = false;
-    newScript.id = 'sketch';
-    newScript.classList += 'p5-debug-js-file';
-
-    var newScript2 = document.createElement("script");
-    newScript2.src = 'p5.min.js';
-    newScript2.async = false;
-    newScript2.id = 'p5';
-    newScript2.classList += 'p5-debug-js-file';
-
-    // for(let link of scripts[1]) {
-    //     let linkScript = document.createElement("script");
-    //     linkScript.src = link;
-    //     linkScript.async = false;
-    //     linkScript.classList += 'p5-debug-js-file';
-    //     document.body.appendChild(linkScript);
-    // }
-
-    document.body.appendChild(newScript);
-    document.body.appendChild(newScript2);
-}
-
-function displayVariables() {
-    for(let variable of trackedVars) {
-
-        let varString, err = false;
-        try {
-            varString = eval(`JSON.stringify(${variable.name}, null, "--> ")`);
-        } catch (error) {
-            varString = '[UNSUPPORTED TYPE]'
-            err = true;
-        }
-        variable.container.firstChild.innerText = `${variable.name}: `;
-        variable.container.firstChild.nextSibling.innerText = `${varString}`;
-
-        if(err) {
-            variable.container.style.backgroundColor = 'rgb(255, 225, 225)';
-            variable.container.style.color = 'rgb(209, 21, 24)';
-        }
-    }
 }
