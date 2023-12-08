@@ -45,7 +45,6 @@ window.addEventListener('message', async function (event) {
 
     sketchFps.addEventListener('input', ()=> {
         fps = sketchFps.value;
-        console.log(sketchFps.value);
         document.getElementById('fps-display').innerText = `FPS: ${fps}`;
     })
 
@@ -106,6 +105,8 @@ window.addEventListener('message', async function (event) {
             newVarString = eval(`JSON.stringify(${varToTrack}, null, "--> ")`);
         } catch (error) {
             newVarString = '[UNSUPPORTED TYPE]'
+            newVarContainer.style.backgroundColor = 'rgb(255, 225, 225)';
+            newVarContainer.style.color = 'rgb(209, 21, 24)';
         }
 
         newVarNameSpan.innerText = `${varToTrack}: `;
@@ -328,12 +329,19 @@ function loadSketch(scripts) {
 function displayVariables() {
     for(let variable of trackedVars) {
 
-        let varString;
+        let varString, err = false;
         try {
             varString = eval(`JSON.stringify(${variable.name}, null, "--> ")`);
         } catch (error) {
             varString = '[UNSUPPORTED TYPE]'
+            err = true;
         }
-        variable.container.innerText = `${variable.name}: ${varString}`
+        variable.container.firstChild.innerText = `${variable.name}: `;
+        variable.container.firstChild.nextSibling.innerText = `${varString}`;
+
+        if(err) {
+            variable.container.style.backgroundColor = 'rgb(255, 225, 225)';
+            variable.container.style.color = 'rgb(209, 21, 24)';
+        }
     }
 }

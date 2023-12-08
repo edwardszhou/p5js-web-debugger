@@ -1,3 +1,8 @@
+@font-face {
+  font-family: Montserrat;
+  src: url(fonts/Montserrat.ttf);
+}
+
 body {
     background-color: #F0F0F0;
     color: #333333;
@@ -6,6 +11,20 @@ body {
 
 hr {
   border-top: 1px dashed grey;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+} 
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+::-webkit-scrollbar-track {
+  background: #F0F0F0;
 }
 
 #jump-input {
@@ -93,7 +112,7 @@ button {
   align-items: center;
   justify-content: center; */
   background-color: white;
-  border: #333333 1px solid;
+  border: #a6a6a6 1px solid;
   margin: 3%;
   width: 64%;
   height: 94%;
@@ -107,11 +126,37 @@ button {
 .variable-container {
   display: flex;
   flex-direction: column;
-  border: #333333 1px solid;
+  border: #a6a6a6 1px solid;
   margin: 3% 3% 3% 0;
   width: 27%;
   height: 94%;
-  background-color: red;
+}
+
+.variable-container h2 {
+  /* font-family: 'Montserrat' ,sans-serif; */
+  font-weight: 500;
+  font-size: 150%;
+  padding: 5%;
+  margin: 0 0 5% 0;
+  border-bottom: #a6a6a6 dashed 1px;
+  color: #333333;
+}
+
+.tracked-variable {
+  font-size: 15;
+  margin: 3px 0;
+  background-color: #e4e4e4;
+  padding: 2% 5%;
+  max-height: 6.6em;
+  overflow: auto;
+}
+
+.tracked-variable:hover {
+  background-color: #d9d9d9;
+}
+
+.tracked-var-name {
+  color:#ed225d;
 }
 
 .frame-tools {
@@ -215,16 +260,26 @@ button:hover {
 }
 .var-tracker {
   width: 30%;
+  margin: 0;
   display: flex;
-  justify-content: space-around;
+  justify-content: flex-start;
   align-items: center;
 }
 
 #fps-display {
   margin-top: -5px;
+  margin-right: 10px;
+  width: 3.5em;
 }
 
 #variable-input {
   font-family: 'Inconsolata', sans-serif;
   font-size: 16px;
+  width: 60%;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  box-sizing: border-box;
+  padding: 8px 14px;
+  margin-right: 5%;
+  font-family: 'Inconsolata', sans-serif;
 }
