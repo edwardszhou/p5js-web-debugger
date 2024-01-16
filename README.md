@@ -24,4 +24,4 @@ https://github.com/ch3926/p5-web-debugger/assets/123663456/7a9747c3-e844-46a5-a8
 - Better control over sketch DOM elements
 - Breakpoints, function stepping line-by-line
 - Better variable tracking (object properties, local variables)
-- Better tracking of user input while sketch is manually controlled
+- Better tracking of user input while sketch is manually controlled (mouse clicks, key press, etc.)
