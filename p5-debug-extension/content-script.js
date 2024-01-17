@@ -1,37 +1,4 @@
 var extensionLoaded = false;
-// return highlighting
-
-// document.body.addEventListener('keydown', (e)=> {
-//     if(e.altKey) {
-//         let keywords = document.getElementsByClassName('cm-keyword');
-//         for(let word of keywords) {
-//             if(word.textContent == "return") {
-//                 word.classList.add("bright-red");
-//             }
-//         }
-//     }
-// });
-
-// document.body.addEventListener('keyup', ()=> {
-//     for(let word of document.getElementsByClassName('bright-red')) {
-//         word.classList.remove('bright-red');
-//     }
-// })
-
-// function highlightVars(response) {
-//     let vars = document.getElementsByClassName('cm-variable');
-//     for(let word of vars) {
-//         if(word.textContent == response) {
-//             word.classList.add("bright-red");
-//         }
-//     }
-//     let defs = document.getElementsByClassName('cm-def');
-//     for(let word of defs) {
-//         if(word.textContent == response) {
-//             word.classList.add("bright-red");
-//         }
-//     }
-// }
 
 // communication with popup
 
@@ -43,7 +10,12 @@ chrome.runtime.onMessage.addListener( function(req, sender, sendResponse) {
 
 });
 
-// manipulate window via event dispatch
+/**
+ * Dispatches specified key event to code container, allowing extension to navigate the code container
+ * of the p5 web editor and get data
+ * 
+ * @param {string} action Type of event to dispatch: NEWLINE|DOWN|UP|HOME|END|PGDOWN|PGUP
+ */
 function keyAction(action) {
     let codeMirrorContainer = document.getElementsByClassName('CodeMirror-code')[0]
     if(action == "NEWLINE") {
@@ -69,11 +41,18 @@ function keyAction(action) {
     }
 }
 
-// getting editor code
+/**
+ * Gets all code of specific file in p5 web editor as a string
+ * 
+ * @param {string} fileName name of file in p5 web editor
+ * @returns code contained in specified file
+ */
 function parseFileCode(fileName) {
 
     let files = document.getElementsByClassName("sidebar__file-item-name");
     let fileFound = false;
+
+    // iterates through all files in web editor and dispatches click on file with matching name
     for(let file of files) {
         if(file.textContent == fileName) {
             file.dispatchEvent(new MouseEvent("click", {
@@ -86,6 +65,7 @@ function parseFileCode(fileName) {
             break;
         }
     }
+    
     if(!fileFound) {
         throw new Error("File not found in p5 editor");
     }
@@ -93,9 +73,13 @@ function parseFileCode(fileName) {
     let lastLineNum = -1;
     let newCode = `\n`;
 
+    // navigates to start of last line in code container
     keyAction("PGDOWN");
     keyAction("HOME");
+
+    // iterates through lines of code in reverse, appends to start of string
     while(lastLineNum != 1) {
+        // each line contains line number and code
         let lineContent = document.getElementsByClassName('CodeMirror-activeline')[0].innerText.split('\n')
         lastLineNum = parseInt(lineContent[0])
 
@@ -109,9 +93,16 @@ function parseFileCode(fileName) {
     
 }
 
+/**
+ * Gets the names of all files with extension .js in p5.js web editor
+ * Only includes files that are included in index.html
+ * 
+ * @returns array of strings containing names of files
+ */
 function getAllJsFiles() {
     let files = document.getElementsByClassName("sidebar__file-item-name");
 
+    // navigates to index.html to only include those files
     for(let file of files) {
         if(file.textContent == "index.html") {
             file.dispatchEvent(new MouseEvent("click", {
@@ -124,17 +115,19 @@ function getAllJsFiles() {
         }
     }
 
+    // navigates to start of bottom line of index.html
     keyAction("PGDOWN");
     keyAction("HOME");
 
     let lastLineNum = -1;
     let jsFiles = [];
 
+    // iterates through each line of index, adds file name to array if includes ".js" extension
     while(lastLineNum != 1) {
         let lineContent = document.getElementsByClassName('CodeMirror-activeline')[0].innerText.split('\n')
         lastLineNum = parseInt(lineContent[0])
         if(lineContent[1].replace(/[\u200B-\u200D\uFEFF]/g, '').includes('.js"></script>')) {
-            // console.log(lineContent.split('"'))
+            // assumes format <script src="file.js"></script>
             jsFiles.push(lineContent[1].split('"')[1])
         }
 
@@ -145,6 +138,13 @@ function getAllJsFiles() {
     return jsFiles;
 }
 
+/**
+ * Given a list of javascript file names, goes through each file in web editor and adds code
+ * to a single string. Also stores list of cdns called for.
+ * 
+ * @param {Array} jsFiles array of file name strings to get code from
+ * @returns object containing the parsed code and all cdns called for
+ */
 function getJsCode(jsFiles) {
 
     let jsCode = ``;
@@ -152,27 +152,24 @@ function getJsCode(jsFiles) {
 
     for(let jsFile of jsFiles) {
         if(jsFile.includes("https://")){
-            // console.log("Not searched: " + jsFile)
             links.push(jsFile);
         } else {
             jsCode += parseFileCode(jsFile);
         }
     }
 
-    // console.log(jsCode)
-
     return {code: jsCode, links: links};
 
 }
 
-async function sendJsCode(str) {
-    await chrome.runtime.sendMessage({jsCode: str});
-}
-
+// Checks window every second to detect if tool has been added yet, adds if not
 window.onload = () => {
     setInterval(modifyToolbar, 1000); // loads new button a bit after window load since p5 apparently has a loading screen
 }
 
+/**
+ * Adds debug button to the p5 web editor UI
+ */
 function modifyToolbar() {
 
     let toolbar = document.getElementsByClassName('toolbar')[0]; // inserts in existing toolbar
@@ -436,4 +433,9 @@ var observeConsole = function(mutationsList) {
               })();
         }
     }
+}
+
+// DEPRECATED
+async function sendJsCode(str) {
+    await chrome.runtime.sendMessage({jsCode: str});
 }
