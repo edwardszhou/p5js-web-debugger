@@ -11,18 +11,22 @@ TODO:
 let trackedVars = [];
 var P5DEBUG__canvas;
 
+// loads everything once iframe receives code from tab
 window.addEventListener('message', async function (event) {
 
     let code = event.data.code;
     let links = event.data.links;
 
+    // manipulates code to separate functions and remove extraneous characters
     let newData = `${code.trim().replace(/[\u200B-\u200D\uFEFF]/g, '')}`
     newData = transform_code(newData.split('\n'), key_pattern, global_pattern).join('\n');
 
+    // sketch variables
     let frameCounter = 0
     let fps = 5
     let sketchPlaying = false;
 
+    // new draw loop, calls draw and updates frame counter and variable display, loops if necessary
     let drawLoop = function () {
         P5DEBUG__draw();
         displayVariables();
@@ -36,11 +40,13 @@ window.addEventListener('message', async function (event) {
     let sketchFps = document.getElementById('sketch-fps');
     let frameDisplay = document.getElementById('frame-display');
 
+    // updates fps display upon input
     sketchFps.addEventListener('input', ()=> {
         fps = sketchFps.value;
         document.getElementById('fps-display').innerText = `FPS: ${fps}`;
     })
 
+    // adds button event listeners
     document.getElementById('prev-frame-btn').addEventListener('click', stepBackward);
     document.getElementById('next-frame-btn').addEventListener('click', stepForward)
     document.getElementById('play-pause-btn').addEventListener('click', toggleSketchPlay);
@@ -50,13 +56,17 @@ window.addEventListener('message', async function (event) {
         jumpToFrame(newFrame);
     })
 
+    // fixes random and noise seeeds per iframe, allowing stepping backwards and resetting to work
     let customNoiseSeed = Math.floor(Math.random() * 1000)
     let customRandomSeed = Math.floor(Math.random() * 1000)
     let noDrawScript = newData.replace(`P5DEBUG__NOISESEED`, `${customNoiseSeed}`).replace(`P5DEBUG__RANDOMSEED`, `${customRandomSeed}`);
 
     console.log(noDrawScript);
+    
+    // loads sketch into iframe
     loadSketch([noDrawScript, links]);
 
+    // variable tracking functionality
     let varSubmitBtn = document.getElementById('variable-submit-btn');
     varSubmitBtn.addEventListener('click', ()=> {
 
@@ -64,6 +74,7 @@ window.addEventListener('message', async function (event) {
 
         if(!checkVarInput(varToTrack)) return;
 
+        // adds variable tracking html
         let newVarContainer = document.createElement('div');
         let newVarNameSpan = document.createElement('span');
         let newVarContentSpan = document.createElement('span');
@@ -76,6 +87,7 @@ window.addEventListener('message', async function (event) {
 
         let newVarString;
 
+        // formats variable using JSON stringify
         try {
             newVarString = eval(`JSON.stringify(${varToTrack}, null, "--> ")`);
         } catch (error) {
@@ -91,6 +103,7 @@ window.addEventListener('message', async function (event) {
 
         allVarsContainer.appendChild(newVarContainer);
 
+        // remove variable on click
         newVarContainer.addEventListener('click', ()=> {
             allVarsContainer.removeChild(newVarContainer);
             for(let i = 0; i < trackedVars.length; i++) {
@@ -105,6 +118,9 @@ window.addEventListener('message', async function (event) {
         document.getElementById('variable-input').value = "";
     })
 
+    /**
+     * Steps sketch forward, updates variables and frame display
+     */
     function stepForward() {
         if(sketchPlaying) return;
 
@@ -114,6 +130,10 @@ window.addEventListener('message', async function (event) {
         frameCounter++;
         frameDisplay.textContent = `Frame Number: ${frameCounter}`;
     }
+
+    /**
+     * Steps sketch backward by resetting sketch and calling draw until previous frame, updates variables and frame display
+     */
     function stepBackward() {
         if(sketchPlaying) return;
 
@@ -125,6 +145,10 @@ window.addEventListener('message', async function (event) {
         }
         displayVariables();
     }
+
+    /**
+     * Toggles sketch play/pause (automatic calling of draw)
+     */
     function toggleSketchPlay() {
         if(sketchPlaying) {
             sketchPlaying = false;
@@ -137,10 +161,15 @@ window.addEventListener('message', async function (event) {
             document.getElementById('play-pause-btn').textContent = '\u23F8'
         }
     }
+
+    /** 
+     * Resets sketch to frame 0
+     */
     function resetSketch() {
         sketchPlaying = false;
         document.getElementById('play-pause-btn').textContent = '\u25BA';
 
+        // resets sketch after last frame call
         setTimeout(()=>{
             P5DEBUG__setup();
             P5DEBUG__canvas.clear();
@@ -149,6 +178,12 @@ window.addEventListener('message', async function (event) {
             displayVariables();
         }, Math.floor(1000/fps) + 1);
     }
+
+    /**
+     * Jumps sketch to specific frame by resetting and calling draw until specified frame
+     * 
+     * @param {number} newFrame frame to jump to
+     */
     function jumpToFrame(newFrame) {
         document.getElementById('jump-input').value = ``;
         if(isNaN(newFrame)) return;
@@ -162,6 +197,13 @@ window.addEventListener('message', async function (event) {
             displayVariables();
         }
     }
+
+    /**
+     * Checks if variable is valid to be added to variable tracker
+     * 
+     * @param {string} varToTrack variable to test
+     * @returns boolean stating validity of variable
+     */
     function checkVarInput(varToTrack) {
         if(varToTrack.replace(/\s/g, "") == "" || (!noDrawScript.includes("let " + varToTrack) && !noDrawScript.includes("var " + varToTrack))) {
             alert("p5 Debug Error: Variable does not exist");
@@ -186,7 +228,14 @@ window.addEventListener('message', async function (event) {
     }
 });
 
+/**
+ * Loads sketch into iframe along with p5.js file
+ * 
+ * @param {array} scripts array containing javascript and list of cdns
+ */
 function loadSketch(scripts) {
+
+    // removes existing files
     if(document.getElementById('p5')) {
         for(let file of document.getElementsByClassName('p5-debug-js-file')) {
             document.body.remove(file);
@@ -205,6 +254,7 @@ function loadSketch(scripts) {
     newScript2.id = 'p5';
     newScript2.classList += 'p5-debug-js-file';
 
+    // LOADING CDNS BLOCKED BY CHROME SECURITY
     // for(let link of scripts[1]) {
     //     let linkScript = document.createElement("script");
     //     linkScript.src = link;
@@ -217,6 +267,9 @@ function loadSketch(scripts) {
     document.body.appendChild(newScript2);
 }
 
+/**
+ * Updates variable display in variable tracker
+ */
 function displayVariables() {
     for(let variable of trackedVars) {
 
