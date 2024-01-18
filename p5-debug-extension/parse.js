@@ -1,3 +1,9 @@
+/**
+ * Generates psuedorandom string of alphabetical characters of a specific length
+ * 
+ * @param {number} length length of random string
+ * @returns pseudorandom string
+ */
 function generate_random_string(length = 100) {
     const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let random_string = '';
