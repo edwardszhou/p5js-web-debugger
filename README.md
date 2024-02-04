@@ -12,7 +12,7 @@ https://github.com/ch3926/p5-web-debugger/assets/123663456/7a9747c3-e844-46a5-a8
 
 ## How to test extension
 
-Download this reposity as a zip file and unzip on your computer. In order to use the extension in Chrome, navigate to chrome://extensions, turn on developer mode in the upper right corner, and click "load unpacked". From there, select the folder "p5-debug-extension" from within your download. It should work when accessing editor.p5js.org (sometimes it doesn't load or the button doesn't quite work; reloading usually fixes it).
+Download this repository as a zip file and unzip on your computer. In order to use the extension in Chrome, navigate to chrome://extensions, turn on developer mode in the upper right corner, and click "load unpacked". From there, select the folder "p5-debug-extension" from within your download. It should work when accessing editor.p5js.org (sometimes it doesn't load or the button doesn't quite work; reloading usually fixes it).
 
 
 ## Features
