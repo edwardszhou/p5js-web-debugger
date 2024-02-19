@@ -8,7 +8,7 @@ TODO:
 
 */
 
-let trackedVars = [];
+let P5DEBUG__trackedVars = [];
 var P5DEBUG__canvas;
 
 // loads everything once iframe receives code from tab
@@ -64,7 +64,7 @@ window.addEventListener('message', async function (event) {
     console.log(noDrawScript);
     
     // loads sketch into iframe
-    loadSketch([noDrawScript, links]);
+    P5DEBUG__loadSketch([noDrawScript, links]);
 
     // variable tracking functionality
     let varSubmitBtn = document.getElementById('variable-submit-btn');
@@ -226,6 +226,29 @@ window.addEventListener('message', async function (event) {
 
         return true;
     }
+
+    /**
+     * Updates variable display in variable tracker
+     */
+    function displayVariables() {
+        for(let variable of trackedVars) {
+
+            let varString, err = false;
+            try {
+                varString = eval(`JSON.stringify(${variable.name}, null, "--> ")`);
+            } catch (error) {
+                varString = '[UNSUPPORTED TYPE]'
+                err = true;
+            }
+            variable.container.firstChild.innerText = `${variable.name}: `;
+            variable.container.firstChild.nextSibling.innerText = `${varString}`;
+
+            if(err) {
+                variable.container.style.backgroundColor = 'rgb(255, 225, 225)';
+                variable.container.style.color = 'rgb(209, 21, 24)';
+            }
+        }
+    }
 });
 
 /**
@@ -233,7 +256,7 @@ window.addEventListener('message', async function (event) {
  * 
  * @param {array} scripts array containing javascript and list of cdns
  */
-function loadSketch(scripts) {
+function P5DEBUG__loadSketch(scripts) {
 
     // removes existing files
     if(document.getElementById('p5')) {
@@ -267,28 +290,6 @@ function loadSketch(scripts) {
     document.body.appendChild(newScript2);
 }
 
-/**
- * Updates variable display in variable tracker
- */
-function displayVariables() {
-    for(let variable of trackedVars) {
-
-        let varString, err = false;
-        try {
-            varString = eval(`JSON.stringify(${variable.name}, null, "--> ")`);
-        } catch (error) {
-            varString = '[UNSUPPORTED TYPE]'
-            err = true;
-        }
-        variable.container.firstChild.innerText = `${variable.name}: `;
-        variable.container.firstChild.nextSibling.innerText = `${varString}`;
-
-        if(err) {
-            variable.container.style.backgroundColor = 'rgb(255, 225, 225)';
-            variable.container.style.color = 'rgb(209, 21, 24)';
-        }
-    }
-}
 
 /*
 
@@ -296,13 +297,13 @@ METHODS BELOW ARE NOT IN USE AS OF 12/8/23
 
 */
 //generate a list holding each line of the code in newData
-function codeList(data) {
+function P5DEBUG__codeList(data) {
     let codeLines = data.split("\n") //split based on "\n"
     return codeLines
 }
 
 // needs fixing
-function findFuncEnds(data) {
+function P5DEBUG__findFuncEnds(data) {
     let codeArr = data
 
     const drawLine = "function draw()"
@@ -354,7 +355,7 @@ function findFuncEnds(data) {
     return {drawLoopEnd: drawLoopEnd, setupEnd: setupEnd, sketchEnd: sketchEnd};
     }
 
-function insertHere(str, codeLines, location){
+function P5DEBUG__insertHere(str, codeLines, location){
     // location: str that represents location to insert (i.e 'drawLoopEnd', 'sketchEnd', 'setupEnd',)
     // console.log('inserting ' + str);
     let insertIndex = findFuncEnds(codeLines)[location];
@@ -364,7 +365,7 @@ function insertHere(str, codeLines, location){
 }
 
 // needs fixing
-function findDrawStart(codeLines) {
+function P5DEBUG__findDrawStart(codeLines) {
     const setupLine = "function draw()"
 
     for (i=0;i<codeLines.length;i++){
@@ -374,7 +375,7 @@ function findDrawStart(codeLines) {
     }
 }
 
-function insertDrawStart(str, codeLines) {
+function P5DEBUG__insertDrawStart(str, codeLines) {
     // console.log('inserting ' + str);
     let insertIndex = findDrawStart(codeLines);
     codeLines.splice(insertIndex, 0, str)
