@@ -174,14 +174,9 @@ function modifyToolbar() {
 
     let toolbar = document.getElementsByClassName('toolbar')[0]; // inserts in existing toolbar
 
-    if(extensionLoaded || !toolbar) {
-        if(!toolbar) {
-            extensionLoaded = false;
-        }
+    if(!toolbar || document.getElementById('debug-btn')) {
         return;
     }
-
-    extensionLoaded = true;
 
     let prefBtn = toolbar.lastChild;
     prefBtn.id = "pref-btn";

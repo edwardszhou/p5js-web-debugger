@@ -106,14 +106,14 @@ window.addEventListener('message', async function (event) {
         // remove variable on click
         newVarContainer.addEventListener('click', ()=> {
             allVarsContainer.removeChild(newVarContainer);
-            for(let i = 0; i < trackedVars.length; i++) {
-                let variable = trackedVars[i]
+            for(let i = 0; i < P5DEBUG__trackedVars.length; i++) {
+                let variable = P5DEBUG__trackedVars[i]
                 if(variable.container == newVarContainer) {
-                    trackedVars.splice(i, 1);
+                    P5DEBUG__trackedVars.splice(i, 1);
                 }
             }
         })
-        trackedVars.push({name: varToTrack, container: newVarContainer});
+        P5DEBUG__trackedVars.push({name: varToTrack, container: newVarContainer});
 
         document.getElementById('variable-input').value = "";
     })
@@ -217,7 +217,7 @@ window.addEventListener('message', async function (event) {
             return false;
         }
 
-        for(let variable of trackedVars) {
+        for(let variable of P5DEBUG__trackedVars) {
             if(variable.name == varToTrack) {
                 alert("p5 Debug Error: Variable is already tracked");
                 return false;
@@ -231,7 +231,7 @@ window.addEventListener('message', async function (event) {
      * Updates variable display in variable tracker
      */
     function displayVariables() {
-        for(let variable of trackedVars) {
+        for(let variable of P5DEBUG__trackedVars) {
 
             let varString, err = false;
             try {
